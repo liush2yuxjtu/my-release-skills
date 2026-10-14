@@ -1,0 +1,6 @@
+interface:
+  display_name: "read-resend-funnel"
+  short_description: "Read optional real broadcast data for feature ranking"
+  default_prompt: "Use $read-resend-funnel as an internal helper for $chatcut-release."
+policy:
+  allow_implicit_invocation: false

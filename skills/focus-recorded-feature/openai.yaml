@@ -1,0 +1,6 @@
+interface:
+  display_name: "Focus Recorded Feature"
+  short_description: "Turn immutable GT recordings into focused MP4 and GIF"
+  default_prompt: "Use $focus-recorded-feature to make Screen Studio-style focus MP4 and 8-second GIF derivatives from verified GT recordings, then inspect frames and save the results."
+policy:
+  allow_implicit_invocation: false

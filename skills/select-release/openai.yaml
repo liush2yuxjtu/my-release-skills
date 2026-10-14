@@ -1,0 +1,6 @@
+interface:
+  display_name: "select-release"
+  short_description: "Choose highlights from all verified user-aware features"
+  default_prompt: "Use $select-release as an internal helper for $chatcut-release."
+policy:
+  allow_implicit_invocation: false

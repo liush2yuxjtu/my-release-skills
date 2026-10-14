@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut Release Docs"
+  short_description: "Maintain production changelog, docs, PR, and Feishu review"
+  default_prompt: "Use $update-release-docs to audit recent ChatCut production releases, update Landing docs, open the beta PR, and publish the configured Feishu review."
+
+policy:
+  allow_implicit_invocation: false

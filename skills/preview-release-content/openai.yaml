@@ -1,0 +1,7 @@
+interface:
+  display_name: "平台发布效果预览"
+  short_description: "在真实平台界面框中复现图文排版，核对像素差异并保留预览证据"
+  default_prompt: "Use $preview-release-content to reproduce release copy and images inside reference-backed platform mock-up boxes."
+
+policy:
+  allow_implicit_invocation: false

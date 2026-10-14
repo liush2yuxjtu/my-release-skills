@@ -1,0 +1,6 @@
+interface:
+  display_name: "collect-release-diff"
+  short_description: "Collect the full evidenced release interval and diffs"
+  default_prompt: "Use $collect-release-diff as an internal helper for $chatcut-release."
+policy:
+  allow_implicit_invocation: false

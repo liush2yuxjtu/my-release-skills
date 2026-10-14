@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut GIF 素材兼容入口"
+  short_description: "Reuse the canonical helper and verified artifacts"
+  default_prompt: "Use $create-gif-assets through chatcut-release and its canonical helper; preserve real scope and evidence."
+
+policy:
+  allow_implicit_invocation: false

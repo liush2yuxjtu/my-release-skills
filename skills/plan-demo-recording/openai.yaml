@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut 录制分镜兼容入口"
+  short_description: "Reuse the canonical helper and verified artifacts"
+  default_prompt: "Use $plan-demo-recording through chatcut-release and its canonical helper; preserve real scope and evidence."
+
+policy:
+  allow_implicit_invocation: false

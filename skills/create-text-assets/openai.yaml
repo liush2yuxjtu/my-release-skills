@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut 生成文本素材占位"
+  short_description: "Placeholder for a ChatCut release preparation task"
+  default_prompt: "使用 $create-text-assets 检查输入输出并返回 TODO。保持占位，不执行发布。"
+
+policy:
+  allow_implicit_invocation: false

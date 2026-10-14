@@ -1,0 +1,6 @@
+interface:
+  display_name: "ChatCut Release Social Cards"
+  short_description: "Build traceable bilingual release cards and a review gallery"
+  default_prompt: "Use $chatcut-release to prepare bilingual review cards for all review candidates or the scope-bound human-selected highlights, loading create-release-social-cards on demand."
+policy:
+  allow_implicit_invocation: false

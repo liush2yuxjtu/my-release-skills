@@ -1,0 +1,20 @@
+interface:
+  display_name: Production Feature Media
+  short_description: Record one shipped feature as verified video and GIF
+  default_prompt: Use $record-production-feature to turn one verified production feature
+    into a full MP4 and an 8-second email GIF. Enforce hard rules: English UI for every
+    recording (set Language to English before record; abort if not English; scan GIF frames
+    for CJK UI); mandatory take verification before keep/discard (fixed-time frame strip
+    vs storyboard plus timing cross-check; log verdict/reason to runs/takes.log); and
+    mandatory test cutout before clip selection (≥3 start/mid/end stills with the same
+    demo cutout tool or noted proxy; reject on holes/fragments/color blending; gate above
+    messiness score; record clip_test_cutout).
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: false

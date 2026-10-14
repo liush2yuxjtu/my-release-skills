@@ -1,0 +1,7 @@
+interface:
+  display_name: "GIF Tweaks 快照预览"
+  short_description: "用同一功能的真实快照预览 GIF 参数，并导出录制规格和验收记录"
+  default_prompt: "Use $preview-gif-tweaks to preview ChatCut GIF settings with matching snapshots and export the recording specification."
+
+policy:
+  allow_implicit_invocation: false

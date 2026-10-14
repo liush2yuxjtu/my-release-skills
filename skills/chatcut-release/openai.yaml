@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut Release"
+  short_description: "One release entry, on-demand skills, one feature choice"
+  default_prompt: "Use $chatcut-release to process this published release and confirm the four communication categories and verified highlights once, then resume needed image/text work."
+
+policy:
+  allow_implicit_invocation: true

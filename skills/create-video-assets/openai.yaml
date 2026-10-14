@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut 视频素材兼容入口"
+  short_description: "Reuse the canonical helper and verified artifacts"
+  default_prompt: "Use $create-video-assets through chatcut-release and its canonical helper; preserve real scope and evidence."
+
+policy:
+  allow_implicit_invocation: false

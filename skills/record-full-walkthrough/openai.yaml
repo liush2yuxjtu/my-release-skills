@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut 完整发布录屏"
+  short_description: "优先复用已有录制，以纯屏幕展示完整更新并保留原片和精确 8 秒 GIF"
+  default_prompt: "使用 $record-full-walkthrough 先查找匹配的已有录制；需要新录时在 Mac mini 录制无讲解字幕和角标的纯屏幕 MP4，交付 8 秒 GIF 预览与版本脚本。"
+
+policy:
+  allow_implicit_invocation: false

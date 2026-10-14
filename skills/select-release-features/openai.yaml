@@ -1,0 +1,7 @@
+interface:
+  display_name: "ChatCut 用户可感知功能筛选"
+  short_description: "Filter release changes by verified user impact and availability"
+  default_prompt: "使用 $select-release-features 筛选本次 Release 中用户可感知的改动，返回完整范围、精选范围、排除理由与待核实项。"
+
+policy:
+  allow_implicit_invocation: false

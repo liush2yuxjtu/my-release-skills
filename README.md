@@ -2,6 +2,8 @@
 
 > AI release automation skills for Claude Code, Codex, and other agent runtimes.
 
+[English](README.md) · [简体中文](README.zh-CN.md)
+
 **My Release Skills** turns a software release into a verifiable customer-facing delivery:
 
 release diff → user-value shortlist → story candidates → recording/GIF assets → channel drafts → human selection → evidence-backed handoff

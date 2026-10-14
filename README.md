@@ -66,7 +66,7 @@ Anthropic describes Agent Skills as folders of instructions, scripts, and resour
 FOLLOW instructions {repo_path}/prompts/prompt.md
 ```
 
-For a standalone installation, pin a repository revision and load only the helper skills needed by the current task. Do not install every helper by default.
+For a standalone installation, pin a repository revision and load only the helper Skill contracts needed by the current task. Runtime adapters, credentials, internal receipts, and customer-specific evidence stay outside this public distribution.
 
 ## Repository map
 
@@ -78,7 +78,7 @@ For a standalone installation, pin a repository revision and load only the helpe
 - `skills/create-release-social-cards/` — reviewable visual candidates
 - `skills/verify-chatcut-release-skill/` — project-level verification
 - `docs/anthropic-knowledge-work-visual.md` — market model and Skill mapping
-- `docs/fde-case-study/` — the ChatCut FDE delivery case
+- Private case study and operational receipts stay in the source repository; the public distribution contains only sanitized Skill contracts
 
 ## Design principles
 

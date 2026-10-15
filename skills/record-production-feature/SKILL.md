@@ -63,7 +63,7 @@ description: Turn one verified production feature into one focused GIF or video.
 
 读取 `$ui-demo` 及其 Work execution mapping、Mac mini policy 和 upstream renderer reference。沿用六个 gate，并在 storyboard 前插入故事调研与设计：brief → discover → story research & design → stock selection & frame scoring → storyboard → rehearse → record → inspect。
 
-- **先做故事调研与故事设计（录制前必做）**：按 [references/story-research.md](references/story-research.md) 调研抖音、小红书上剪辑软件教程和特效展示视频，找出最惊艳、传播最好的手法，再基于调研为每个功能/PR 生成三个一句话故事选项（模板：【谁】在【场景】用【新功能】完成了【什么】）：A GBA 风格/搞笑、B 直给演示、C 情感共鸣；只标一个“推荐”并附一句理由（贴合功能、8 秒可录完、符合调研到的抖音/小红书手法）。默认采用推荐项，除非有人另选；再为选中的故事补齐开头的问题、中段用新功能解决、结尾的惊喜成果。完整 MP4 和 8 秒 GIF 都要呈现这个场景里的真实成就感，而不只是功能走查。产出 `story/research.md` 和 `story/story.md` 后，才进入 storyboard。
+- **先做故事调研与故事设计（录制前必做）**：按 [references/story-research.md](references/story-research.md) 做**开放式**调研（不预设哪个候选更好），从实际打开的来源提炼原则，推导加权量表（默认 R1–R7：前1–2秒能看懂 20 / 只讲一个结果 15 / 前后对比+结果停留2–3s 20 / 无声无字幕能懂 15 / 真实UI+可共鸣情境 15 / 动效克制 10 / 可裁8s循环GIF 5），对**每一个**候选（旧+新）打分并按总分推荐；**禁止仅用 chat 历史为偏好故事辩护**。过程示例：https://resume-box.tail6a877d.ts.net/atelier-tweaks/story-research/ 。再为每个功能/PR 写三个一句话故事（模板：【谁】在【场景】用【新功能】完成了【什么】：A GBA/搞笑、B 直给、C 情感），可增新候选；推荐项须带量表总分。完整 MP4 与 8s GIF 都要呈现真实成就感，不是功能走查。产出 `story/research.md` 与 `story/story.md` 后才进 storyboard。
 - 节奏和钩子参考抖音、小红书教程风格：第一秒交代问题或亮出前后对比的钩子，快速进入关键操作，把结果揭晓放在 GIF 区间内；仍保持 pure-screen 默认，不加未要求的字幕或音乐。
 - 设计 3–6 个可见 beat（由选中的故事选项映射而来，最后一个 beat 必须是故事的高光成果）：入口与已有状态 → 核心操作 → 状态变化 → 最终结果。
 - 发现实际控件、可访问名称、窗口和元素矩形、滚动位置、弹窗、依赖及动作后的结果。

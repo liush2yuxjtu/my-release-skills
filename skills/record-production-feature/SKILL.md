@@ -179,7 +179,7 @@ python3 scripts/build_feature_media.py \
    WCAG 本身不规定绝对像素（SC 1.4.4），所以必须在交付尺寸上实测。
 4. **结果可读时长**：结果文字达标的连续时长 ≥3 s（与第 7 节"结果可读 ≥3 秒"一致，按像素门槛计，不按 OCR 计）。
 5. **构图**：每个特写镜头 ROI 完整在画面内，ROI 中心偏移 ≤10%（宽/高）。点击瞬间控件必须是特写主体（不是宽景边缘）；指针不得遮挡被点击的标签（点击芯片右下角）。
-6. **冷启动观众测试（cold-viewer）**：只给一个视觉模型 16 帧等距 contact sheet（无字幕、无文件名、无上下文），问"发生了什么？给谁用？"。必须独立复原故事：**一个控件（名称可读）→ 改变了什么（前/后文字可读）→ 变成什么风格/结果**。由制作者自己评判不算独立，只能记为 provisional，并请父 agent 用新的上下文跑一次。
+6. **冷启动观众测试（cold-viewer）**：只给一个视觉模型 16 帧等距 contact sheet（无字幕、无文件名、无上下文），问"发生了什么？给谁用？"。必须独立复原故事：**一个控件（名称可读）→ 改变了什么（前/后文字可读）→ 变成什么风格/结果**。由制作者自己评判不算独立，只能记为 provisional，并请父 agent 用新的上下文跑一次。**地区/模型回退**：若 `videoReview`（或其他视频视觉模型）在用户所在地区不可用，不得跳过门禁；改为解码交付 GIF 帧 + `verify/cold-viewer-contact-sheet.png`（及 beat 静帧），由**未参与录制的新上下文**按同一问题冷读。只要读者不是录制者，仍计为独立 cold-viewer。
 7. **证据文件**（提交到 `runs/<take>/verify/`）：`legibility.json`（thresholds+sources、before/after 每项实测、OCR tokens、centering、readable_result、story_test 原文回答）、`legibility-strip.png`（每个 beat 帧 + 实测值标注）、`cold-viewer-contact-sheet.png`、`mp4-ocr.json`；`shotlist.json` 中每个镜头写入 `legibility_px`。
 8. **失败 → 修复循环**：只修根因，按优先级：(a) 镜头/zoom 关键帧与 ROI 居中（`camera.py`）；(b) 每个关键文字给一个特写镜头，按 `zoom ≥ 阈值px ÷ (CSS字形px × 交付宽/1920)` 算倍数；(c) 录制 DPR 2（高倍裁剪仍锐利）；(d) 指针落点/停留；(e) 更宽 GIF 或裁剪；(f) 最后才动 App（demo zoom/字号，最小改动，先 pull）。不加速、不加字幕。新 take 或新 `edits/<vN>`，保留旧 run，追加 `runs/takes.log`，重跑同一套验证直到通过。
 

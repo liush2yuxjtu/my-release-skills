@@ -2,19 +2,94 @@
   "status": "ready | ready-with-notes | blocked",
   "user_story": "【谁】在【场景】用【功能】完成了【什么】",
   "funnel_url": "https://<host>/<gallery>/<feature>/",
-  "funnel_checks": [{"url": "https://<host>/<gallery>/<feature>/", "status": 200}],
+  "funnel_checks": [
+    {
+      "url": "https://<host>/<gallery>/<feature>/",
+      "status": 200
+    }
+  ],
   "gif": "https://<host>/<gallery>/<feature>/<feature>.gif",
   "mp4": "https://<host>/<gallery>/<feature>/<feature>.mp4",
   "poster": "https://<host>/<gallery>/<feature>/poster.png",
   "commit": "<40-char sha>",
   "branch": "feat/<branch>",
   "pr": "https://github.com/<owner>/<repo>/pull/<n>",
-  "story_scores": [{"candidate": "<id>", "R1": null, "R2": null, "R3": null, "R4": null, "R5": null, "R6": null, "R7": null, "total": 0}],
+  "story_scores": [
+    {
+      "candidate": "<id>",
+      "R1": null,
+      "R2": null,
+      "R3": null,
+      "R4": null,
+      "R5": null,
+      "R6": null,
+      "R7": null,
+      "total": 0
+    }
+  ],
   "winner": "<candidate id>",
-  "qa": {"verdict": "pass | pass-with-notes | fail", "hold_s": 0, "cjk_frames": 0, "notes": ""},
+  "shot_list": [
+    {
+      "id": "S1",
+      "t_start": 0.0,
+      "t_end": 0.5,
+      "beat": "B0 establish",
+      "framing": "full",
+      "zoom": 1.0,
+      "crop_css": [
+        0,
+        0,
+        1920,
+        1080
+      ],
+      "roi_css": [
+        0,
+        0,
+        1920,
+        1080
+      ],
+      "focus": "<UI label>",
+      "pointer": "idle",
+      "text_expected": [],
+      "legibility_px": null,
+      "transition_in": "cut",
+      "ease": "cosine, log-zoom",
+      "hold_s": 0.5,
+      "purpose": "<why>"
+    }
+  ],
+  "legibility": {
+    "verdict": "pass | fail",
+    "file": "docs/media/runs/<take>/verify/legibility.json",
+    "checks": [
+      {
+        "id": "hero_after",
+        "metric": "cap_height",
+        "measured_px": 0,
+        "threshold_px": 16,
+        "ocr": true,
+        "pass": false
+      }
+    ],
+    "readable_result_s": 0,
+    "centering_pass": false,
+    "story_test": {
+      "independent": false,
+      "pass": false,
+      "answer": ""
+    }
+  },
+  "qa": {
+    "verdict": "pass | pass-with-notes | fail",
+    "hold_s": 0,
+    "cjk_frames": 0,
+    "notes": ""
+  },
   "deviations": [],
   "artifacts": [],
   "known_weaknesses": [],
-  "issues_for": {"<agent_id>": []},
+  "issues_for": {
+    "<agent_id>": []
+  },
   "next": ""
 }

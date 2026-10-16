@@ -149,6 +149,29 @@ python3 scripts/build_feature_media.py \
 - 按真实 UI 区间验证 presentation、crop 与画面。失败时，只修复有证据的问题，在新的 edits 目录重做并检查同一区间。
 - 在 `qa.json` 填写 `visual_review` 的检查人、时间、检查图片路径和结果；保留机器结果，不能自动把状态改成通过。
 
+### 7.1 可读性与故事清晰度门禁（Legibility & story clarity gate，强制）
+
+在交付尺寸（通常 520 px GIF）上验证，不在 1920 母版上验证。任何一项失败 ⇒ 不得标 `ready`，进入修复循环。
+
+**方法**
+1. 先写 `shotlist.json`（见 `references/shot-list-schema.md`）：每个关键文字归属一个镜头和一个 beat 帧（hero 前/后、被点击的控件标签、CTA 等结果文字）。
+2. 解码交付 GIF 全部帧（`ffmpeg -vsync 0`），在每个 beat 帧上：
+   - **OCR**：tesseract 5，psm 11 + psm 6，正常 + 反色各一遍（3× 放大仅用于识别）。每个关键 token 必须识别到（模糊匹配 ≥0.8）。OCR 只是必要条件：3× 放大后小字也能被识别，必须同时满足像素门槛。
+   - **像素测量（交付尺寸）**：在 OCR 词框（上下各加 20% 余量）内按"与主色调差异"取墨迹行，取最长连续行段：cap height 用该词自己的首个大写字母；x-height 用只含 x-height 字母的切片（如 `SaaS` 的 `aa`、`Mood` 的 `oo`）。被叠加物拆开的词（如 `B`+`ags`）取单独大写字母。
+   - 参考实现：`scripts/verify_legibility.py` + `legibility_spec.json`（atelier `scripts/generative-v1/` 有同款）。
+3. **门槛（默认，按 1 GIF px = 1 CSS px、约 50 cm 观看，1 px ≈ 0.030°）**
+   | 文字 | 指标 | 最小值 | 依据 |
+   |---|---|---|---|
+   | hero / 结果标题 | cap height | **16 px** | ≈0.48° cap / 0.33° x-height，>1.5× 临界印刷尺寸 0.2°（Legge & Bigelow 2011, JoV 11(5):8）；移动端 520→340 缩放后仍 ≥0.2°；约等于 WCAG "large text"（18 pt） |
+   | 被操作的控件标签 | x-height | **9 px** | ≈0.27° > 0.2° CPS；约 18 px UI 字号，高于 Apple HIG 11 pt / Material 12 sp 最小值 |
+   | CTA / 次要结果文字 | x-height | **7 px** | ≈0.21° ≥ 0.2° CPS |
+   WCAG 本身不规定绝对像素（SC 1.4.4），所以必须在交付尺寸上实测。
+4. **结果可读时长**：结果文字达标的连续时长 ≥3 s（与第 7 节"结果可读 ≥3 秒"一致，按像素门槛计，不按 OCR 计）。
+5. **构图**：每个特写镜头 ROI 完整在画面内，ROI 中心偏移 ≤10%（宽/高）。点击瞬间控件必须是特写主体（不是宽景边缘）；指针不得遮挡被点击的标签（点击芯片右下角）。
+6. **冷启动观众测试（cold-viewer）**：只给一个视觉模型 16 帧等距 contact sheet（无字幕、无文件名、无上下文），问"发生了什么？给谁用？"。必须独立复原故事：**一个控件（名称可读）→ 改变了什么（前/后文字可读）→ 变成什么风格/结果**。由制作者自己评判不算独立，只能记为 provisional，并请父 agent 用新的上下文跑一次。
+7. **证据文件**（提交到 `runs/<take>/verify/`）：`legibility.json`（thresholds+sources、before/after 每项实测、OCR tokens、centering、readable_result、story_test 原文回答）、`legibility-strip.png`（每个 beat 帧 + 实测值标注）、`cold-viewer-contact-sheet.png`、`mp4-ocr.json`；`shotlist.json` 中每个镜头写入 `legibility_px`。
+8. **失败 → 修复循环**：只修根因，按优先级：(a) 镜头/zoom 关键帧与 ROI 居中（`camera.py`）；(b) 每个关键文字给一个特写镜头，按 `zoom ≥ 阈值px ÷ (CSS字形px × 交付宽/1920)` 算倍数；(c) 录制 DPR 2（高倍裁剪仍锐利）；(d) 指针落点/停留；(e) 更宽 GIF 或裁剪；(f) 最后才动 App（demo zoom/字号，最小改动，先 pull）。不加速、不加字幕。新 take 或新 `edits/<vN>`，保留旧 run，追加 `runs/takes.log`，重跑同一套验证直到通过。
+
 ## 8. 准备交付
 
 - 交付 `demo.mp4`、`feature-8s.gif`、poster、chapters、manifest、QA 和邮件片段，按请求选择格式。
@@ -166,6 +189,7 @@ python3 scripts/build_feature_media.py \
 - **C3 单一事实源**：每次 run 必须写 `runs/<take>/handoff.json`（字段：`status, user_story, funnel_url, funnel_checks[{url,status}], gif, mp4, poster, commit, branch, pr, story_scores[], winner, qa{verdict,hold_s,cjk_frames,notes}, deviations[], artifacts[], known_weaknesses[], issues_for{agent_id:[...]}, next`），提交到功能分支（不是 main），并发布到 funnel；下面两条消息都只能从它渲染，不得另写内容。
 - **给用户的聊天消息**（中文叙述，代码/路径用英文），严格按顺序：A1 状态（`ready` | `ready-with-notes` | `blocked`）→ A2 用户故事「【谁】在【场景】用【功能】完成了【什么】」→ A3 Funnel 链接（已验证 HTTP 200）→ A4 内联 GIF 附件 → A5 故事评分表（每个候选 R1–R7 + 总分，标出胜者）→ A7 QA 结论（pass/notes、结果停留秒数、CJK 检查）→ A8 与请求的偏差 → A10 下一步（一句话；多个选项时用决策表）。A6 产物清单与 A9 已知弱点不放进聊天消息，只写在 `handoff.json`。
 - **给 bot 的消息**（SendToAgent）：B1 固定英文行 `STATUS / RESULT / FUNNEL / COMMIT / ARTIFACTS / QA / ISSUES_FOR_YOU / NEXT` → B2 同字段的 fenced JSON 块 → B3 `handoff.json` 路径及其 funnel URL。
+- **镜头分镜**：`handoff.json` 必须含 `shot_list[]`（字段见 `references/shot-list-schema.md`，模板 `assets/shotlist.template.json`）；聊天消息在 A5 故事评分表之后紧跟一张紧凑的 **A6s 镜头分镜表**；bot 消息 B1 增加 `SHOTS:` 行，B2 JSON 含 `shot_list`。
 - 缺任何必填字段或 funnel 未验证 200 时，不得标 `ready`。
 
 ## 验收清单（Acceptance checklist）
@@ -175,13 +199,15 @@ python3 scripts/build_feature_media.py \
 - [ ] `ui_language` 为 `en`：录前 pre-flight（设置或可见英文 UI 文案截图/DOM）通过；GIF 帧 post-check 无 CJK UI 文字；项目/时间线/素材名为英文。
 - [ ] `take_verification`：每条 take 均有固定时刻抽帧 strip/contact sheet + 分镜对照 + timing 日志交叉核对；keep/discard 均有 verdict 与具体 reason；丢弃目录按原因命名，`runs/takes.log` 已追加。
 - [ ] `clip_test_cutout`：选片前对候选片 ≥3 静帧（片头/片中/片尾）用演示同一抠图工具试抠并通过；失败片已立即丢弃（未录制）；已记入 Negative examples + 本 run `report.md`/`feature.json`；按同一标准循环搜下一片；满 N=10 仍无通过则 `blocked`（未降门禁）。
+- [ ] `legibility_gate`（§7.1）：交付尺寸 GIF 上 hero cap ≥16 px、被操作控件标签 x-height ≥9 px、CTA x-height ≥7 px（或在 `legibility.json` 里给出有来源的其他门槛）；每个 beat 帧 OCR 识别全部关键 token；结果文字达标 ≥3 s；特写 ROI 完整且居中（≤10%）；冷启动观众测试独立复原"一个控件→改了什么→什么风格"（自评只算 provisional）；证据 `verify/legibility.json` + `verify/legibility-strip.png` + contact sheet 已提交。失败已按修复循环重做并记入 `runs/takes.log`。
+- [ ] `shot_list`：`runs/<take>/shotlist.json` 与 `handoff.json.shot_list[]` 一致，字段完整（id、t_start/t_end、beat、framing、zoom、roi、focus、pointer、text_expected、legibility_px、transition/ease、hold_s、purpose）；聊天消息含 A6s 镜头分镜表。
 - [ ] 生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过（见下方输出状态）。
 
 ## 输出状态
 
 - `ready`：生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过；且 `ui_language=en`、`take_verification` 与 `clip_test_cutout` 硬性规则均满足。
 - `needs-visual-review`：编码与文件检查通过，画面尚未验证。
-- `blocked`：生产来源、录制路线、窗口权限、登录、空间、依赖阻塞，或英文 UI / take 核验 / 试抠图门禁未通过；交付已完成的准备工作与真实错误。
+- `blocked`：生产来源、录制路线、窗口权限、登录、空间、依赖阻塞，或英文 UI / take 核验 / 试抠图 / 可读性门禁未通过；交付已完成的准备工作与真实错误。
 - `fixture-only`：合成测试素材，禁止用于生产或发送验收。
 
 ## 队友共用 Mac mini

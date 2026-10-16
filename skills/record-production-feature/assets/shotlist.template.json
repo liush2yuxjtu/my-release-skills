@@ -1,0 +1,32 @@
+{
+  "take": "<feature>-take<N>",
+  "edit": "edits/<zoom-vN>",
+  "gif": {"width": 520, "height": 292, "fps": 12, "frames": 96, "duration_s": 8, "window_raw_s": [0, 8]},
+  "click_gif_s": 0,
+  "camera": "scripts/<feature>/camera.py",
+  "coords": "CSS px of the 1920x1080 viewport",
+  "shots": [
+    {
+      "id": "S1",
+      "t_start": 0.0,
+      "t_end": 0.5,
+      "t_raw_start": 0.0,
+      "beat": "B0 establish | B1 before | B2 action | B3 result | B4 payoff | transition",
+      "framing": "full | medium | close",
+      "zoom": 1.0,
+      "crop_css": [0, 0, 1920, 1080],
+      "roi_css": [0, 0, 1920, 1080],
+      "roi_center_offset_pct": [0, 0],
+      "roi_in_frame": true,
+      "focus": "<UI label(s) verbatim>",
+      "pointer": "idle | glide to <label> | click <label> at <t> s | parked off frame",
+      "text_expected": ["<verbatim on-screen text>"],
+      "legibility": "<check id> | null",
+      "legibility_px": {"metric": "cap_height | x_height", "measured": 0, "threshold": 16, "frame": 1, "pass": false},
+      "transition_in": "cut | push-in 0.6 s | pull-out 0.3 s",
+      "ease": "cosine, log-zoom",
+      "hold_s": 0.5,
+      "purpose": "<why this shot exists in the story>"
+    }
+  ]
+}

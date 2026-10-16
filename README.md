@@ -4,6 +4,14 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
+## Install / quick start
+
+```text
+FOLLOW instructions {repo_path}/prompts/prompt.md
+```
+
+Pin a repository revision and load only the helper Skill contracts needed by the current task. Runtime adapters, credentials, and customer evidence stay outside this public distribution. Entry skill: `skills/chatcut-release/SKILL.md`.
+
 **My Release Skills** turns a software release into a verifiable customer-facing delivery:
 
 release diff → user-value shortlist → story candidates → recording/GIF assets → channel drafts → human selection → evidence-backed handoff
@@ -62,14 +70,6 @@ Anthropic describes Agent Skills as folders of instructions, scripts, and resour
 - Idempotency, durable checkpoints, source SHA binding, and repeat-run checks
 - Evidence-first verification that distinguishes planned, prepared, recorded, sent, and published
 
-## Quick start
-
-```text
-FOLLOW instructions {repo_path}/prompts/prompt.md
-```
-
-For a standalone installation, pin a repository revision and load only the helper Skill contracts needed by the current task. Runtime adapters, credentials, internal receipts, and customer-specific evidence stay outside this public distribution.
-
 ## Repository map
 
 - `skills/chatcut-release/SKILL.md` — single public entry point
@@ -123,6 +123,11 @@ The public `my-release-skills` repository is a sanitized distribution. Internal 
 ## Search terms
 
 AI release automation, Agent Skills, Claude Code skills, Codex skills, GitHub release automation, release notes automation, product launch workflow, GIF demo generation, release marketing automation, FDE workflow, developer relations automation, Resend email drafts, Feishu release review, MCP release tooling.
+
+## Related projects
+
+- [html-artifacts](https://github.com/liush2yuxjtu/html-artifacts) — Claude skill for interactive HTML artifacts
+- [atelier](https://github.com/liush2yuxjtu/atelier) — open-source Claude Design alternative
 
 ## License
 

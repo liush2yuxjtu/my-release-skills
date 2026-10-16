@@ -40,14 +40,14 @@ description: Turn one verified production feature into one focused GIF or video.
 
 ## 0. Inbound delegate（其他 agent 委托录制）
 
-其他 agent 通过 **`delegate_to_feature_recorder/v1`** 委托本技能录制时，使用 **inbound** schema，与 §8 的 **outbound** `handoff-schema` 分开：
+其他 agent 通过 **`delegate_to_feature_recorder/v1.1`**（仍接受 **v1**）委托本技能录制时，使用 **inbound** schema，与 §8 的 **outbound** `handoff-schema` 分开：
 
 | 方向 | 文档 | 载体 |
 |---|---|---|
 | **Inbound**（请求进来） | [references/delegate-schema.md](references/delegate-schema.md) | YAML（模板 [assets/delegate.template.yaml](assets/delegate.template.yaml)）+ SendToAgent 紧凑英文行 |
 | **Outbound**（跑完交付） | [references/handoff-schema.md](references/handoff-schema.md) | `handoff.json` + 聊天 A 消息 + bot B 消息 |
 
-**必填（缺一则 `blocked`，决策表回复，禁止盲录）**：`repo`、`branch`、`commit` 或 `pr`（至少一个）、`user_outcome`、`reply_to`（完成后 B-message 的 agent id）。可选 tip（不强制）：`entry_url`、`feature_slug`、`ui_hooks`、`demo_prompt`、`format`、`cut_policy`、`constraints`、`llm_provider`。完整字段、YAML 与 `DELEGATE/REPO/BRANCH/COMMIT/OUTCOME/REPLY_TO/OPTIONAL…` 行格式见 delegate-schema。跑完后按既有 handoff 规则向 `reply_to` 发 B 消息；不改变 §8 handoff 规则。
+**必填（缺一则 `blocked`，决策表回复，禁止盲录）**：`repo`、`branch`、`commit` 或 `pr`（至少一个）、`user_outcome`、`reply_to`（完成后 B-message 的 agent id）。**推荐 tip**（可省略，缺省填默认并记入 `deviations`）：`record_machine`（`box` \| `mac_mini` \| `auto`，默认 `auto`）、`publish_programs_repo`（默认 `liush2yuxjtu/feature-recorder`）。可选 tip：`entry_url`、`feature_slug`、`ui_hooks`、`demo_prompt`、`format`、`cut_policy`、`constraints`。`llm_provider` 为 **ignored/legacy**（出现也不影响选模）。v1 入站缺推荐 tip 时填默认并写入 `deviations`。完整字段见 delegate-schema。跑完后按既有 handoff 规则向 `reply_to` 发 B 消息；不改变 §8 handoff 规则（含 `funnel_checks` 硬门禁：page + gif + mp4 + handoff.json）。
 
 ## 1. 确认一个生产功能
 
@@ -203,7 +203,7 @@ python3 scripts/build_feature_media.py \
 - **给用户的聊天消息**（中文叙述，代码/路径用英文），严格按顺序：A1 状态（`ready` | `ready-with-notes` | `blocked`）→ A2 用户故事「【谁】在【场景】用【功能】完成了【什么】」→ A3 Funnel 链接（已验证 HTTP 200）→ A4 内联 GIF 附件 → A5 故事评分表（每个候选 R1–R7 + 总分，标出胜者）→ A7 QA 结论（pass/notes、结果停留秒数、CJK 检查）→ A8 与请求的偏差 → A10 下一步（一句话；多个选项时用决策表）。A6 产物清单与 A9 已知弱点不放进聊天消息，只写在 `handoff.json`。
 - **给 bot 的消息**（SendToAgent）：B1 固定英文行 `STATUS / RESULT / FUNNEL / COMMIT / ARTIFACTS / QA / ISSUES_FOR_YOU / NEXT` → B2 同字段的 fenced JSON 块 → B3 `handoff.json` 路径及其 funnel URL。
 - **镜头分镜**：`handoff.json` 必须含 `shot_list[]`（字段见 `references/shot-list-schema.md`，模板 `assets/shotlist.template.json`）；聊天消息在 A5 故事评分表之后紧跟一张紧凑的 **A6s 镜头分镜表**；bot 消息 B1 增加 `SHOTS:` 行，B2 JSON 含 `shot_list`。
-- 缺任何必填字段或 funnel 未验证 200 时，不得标 `ready`。
+- 缺任何必填字段、`funnel_checks` 未覆盖 page + gif + mp4 + handoff.json（各 200），或 funnel 未验证 200 时，不得标 `ready`。
 
 ## 验收清单（Acceptance checklist）
 

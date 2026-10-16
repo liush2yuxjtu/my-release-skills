@@ -6,6 +6,18 @@
     {
       "url": "https://<host>/<gallery>/<feature>/",
       "status": 200
+    },
+    {
+      "url": "https://<host>/<gallery>/<feature>/<feature>.gif",
+      "status": 200
+    },
+    {
+      "url": "https://<host>/<gallery>/<feature>/<feature>.mp4",
+      "status": 200
+    },
+    {
+      "url": "https://<host>/<gallery>/<feature>/handoff.json",
+      "status": 200
     }
   ],
   "gif": "https://<host>/<gallery>/<feature>/<feature>.gif",

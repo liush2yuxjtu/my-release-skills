@@ -9,7 +9,7 @@ Every run ends with one file, `runs/<take>/handoff.json`, as the **single source
 | `status` | `ready` \| `ready-with-notes` \| `blocked` | |
 | `user_story` | string | 【谁】在【场景】用【功能】完成了【什么】 |
 | `funnel_url` | URL | public gallery page |
-| `funnel_checks` | `[{url, status}]` | every published URL, HTTP status actually observed (must be 200) |
+| `funnel_checks` | `[{url, status}]` | every published URL, HTTP status actually observed (must be 200). **Hard gate:** must cover page + gif + mp4 + handoff.json (see below) |
 | `gif`, `mp4`, `poster` | URL | funnel URLs |
 | `commit`, `branch`, `pr` | string | feature branch, never `main` |
 | `story_scores` | `[{candidate, R1..R7, total}]` | rubric in `story-research.md` |
@@ -17,13 +17,26 @@ Every run ends with one file, `runs/<take>/handoff.json`, as the **single source
 | `shot_list` | `shot[]` | 镜头分镜, copy of `runs/<take>/shotlist.json` `shots[]`; fields in `shot-list-schema.md` (id, t_start, t_end, beat, framing, zoom, crop_css, roi_css, focus, pointer, text_expected, legibility_px, transition_in, ease, hold_s, purpose) |
 | `legibility` | `{verdict, file, checks:[{id, metric, measured_px, threshold_px, ocr, pass}], readable_result_s, centering_pass, story_test:{independent, pass, answer}}` | §7.1 gate summary; full evidence in `runs/<take>/verify/legibility.json` |
 | `qa` | `{verdict, hold_s, cjk_frames, notes}` | verdict `pass` \| `pass-with-notes` \| `fail` |
-| `deviations` | string[] | differences from the request |
+| `deviations` | string[] | differences from the request (include inbound v1 default fills when applicable) |
 | `artifacts` | string[] | repo paths (A6, not in chat) |
 | `known_weaknesses` | string[] | (A9, not in chat) |
 | `issues_for` | `{agent_id: [issue,...]}` | issues routed to other bots |
 | `next` | string or `[{option, effect}]` | |
 
 Unknown R1–R7 sub-scores: use `null`, keep `total`.
+
+### `funnel_checks` hard gate (required for `ready`)
+
+`funnel_checks` must include **at least these four** URLs, each with observed HTTP **200** from outside the box:
+
+| role | must match |
+|---|---|
+| **page** | gallery / feature page (`funnel_url`) |
+| **gif** | published GIF (`gif` field) |
+| **mp4** | published MP4 (`mp4` field) |
+| **handoff.json** | published `handoff.json` on the funnel |
+
+Missing any of the four entries, or any non-200 status ⇒ **not** `status: ready` (use `blocked` or `ready-with-notes` only when the missing piece is explicitly documented and the run is otherwise complete — default is not `ready`). Extra URLs (e.g. poster) may appear in `funnel_checks` but do not replace the four.
 
 ## A — user chat message (Chinese prose, code/paths English), in this order
 
@@ -64,4 +77,4 @@ B3: `handoff.json: <repo path>` and `<funnel URL of handoff.json>`.
 
 - Write, commit (feature branch), and publish `handoff.json` before sending either message.
 - Verify every URL in `funnel_checks` returns 200 from outside the box (the box cannot TLS to its own funnel; use the Mac mini or WebFetch).
-- Missing required field, missing/failed `legibility` gate, empty `shot_list`, or unverified funnel ⇒ not `ready`.
+- Missing required field, missing/failed `legibility` gate, empty `shot_list`, incomplete `funnel_checks` (page + gif + mp4 + handoff.json), or unverified funnel ⇒ not `ready`.

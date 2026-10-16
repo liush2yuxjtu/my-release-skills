@@ -1,7 +1,9 @@
-# delegate_to_feature_recorder/v1 — fill placeholders, then SendToAgent + attach/path this file.
-# Required fields only below. Optional tips: entry_url, feature_slug, ui_hooks,
-# demo_prompt, format, cut_policy, constraints, llm_provider (see references/delegate-schema.md).
-schema: delegate_to_feature_recorder/v1
+# delegate_to_feature_recorder/v1.1 — fill placeholders, then SendToAgent + attach/path this file.
+# Required fields below. Recommended tips: record_machine, publish_programs_repo.
+# Optional tips: entry_url, feature_slug, ui_hooks, demo_prompt, format, cut_policy,
+# constraints. llm_provider is ignored/legacy (see references/delegate-schema.md).
+# Still accepts schema …/v1; missing recommended tips → defaults + deviations note.
+schema: delegate_to_feature_recorder/v1.1
 repo: <owner/name>
 branch: <feat/branch-name>
 commit: <40-char-sha-or-abbrev>
@@ -9,3 +11,6 @@ pr: <https://github.com/owner/name/pull/N-or-number>
 user_outcome: >-
   <One sentence: what the viewer must see at the end of the recording.>
 reply_to: <agent-id-to-receive-B-message>
+# recommended (omit → defaults + note in deviations)
+record_machine: auto   # box | mac_mini | auto
+publish_programs_repo: liush2yuxjtu/feature-recorder

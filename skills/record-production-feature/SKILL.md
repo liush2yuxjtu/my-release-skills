@@ -38,6 +38,17 @@ description: Turn one verified production feature into one focused GIF or video.
 
 在 `feature.json` 中记录：`ui_language`（必须为 `en`，含 pre-flight/post-check 证据路径）、`take_verification`（每条 take 的 strip 路径、timing 交叉核对、verdict、reason）、`clip_test_cutout`（候选帧、工具、verdict、reasons、evidence paths；失败时亦须保留）。
 
+## 0. Inbound delegate（其他 agent 委托录制）
+
+其他 agent 通过 **`delegate_to_feature_recorder/v1`** 委托本技能录制时，使用 **inbound** schema，与 §8 的 **outbound** `handoff-schema` 分开：
+
+| 方向 | 文档 | 载体 |
+|---|---|---|
+| **Inbound**（请求进来） | [references/delegate-schema.md](references/delegate-schema.md) | YAML（模板 [assets/delegate.template.yaml](assets/delegate.template.yaml)）+ SendToAgent 紧凑英文行 |
+| **Outbound**（跑完交付） | [references/handoff-schema.md](references/handoff-schema.md) | `handoff.json` + 聊天 A 消息 + bot B 消息 |
+
+**必填（缺一则 `blocked`，决策表回复，禁止盲录）**：`repo`、`branch`、`commit` 或 `pr`（至少一个）、`user_outcome`、`reply_to`（完成后 B-message 的 agent id）。可选 tip（不强制）：`entry_url`、`feature_slug`、`ui_hooks`、`demo_prompt`、`format`、`cut_policy`、`constraints`、`llm_provider`。完整字段、YAML 与 `DELEGATE/REPO/BRANCH/COMMIT/OUTCOME/REPLY_TO/OPTIONAL…` 行格式见 delegate-schema。跑完后按既有 handoff 规则向 `reply_to` 发 B 消息；不改变 §8 handoff 规则。
+
 ## 1. 确认一个生产功能
 
 - 从连接器读取实际 production release、tag、commit、相关 PR 和功能开关。不要把 beta、合并 PR 或营销邮件当成生产上线证明。
@@ -183,6 +194,8 @@ python3 scripts/build_feature_media.py \
 - 汇报一个功能的用户结果、来源、产物、文件检查、视觉检查、访问检查及实际阻塞。不要称只读抽帧为真实客户端邮箱验收。
 
 ### 交付输出 schema（强制）
+
+> Inbound 委托字段见上方 §0 / `references/delegate-schema.md`；本节仅约束 **outbound** handoff。
 
 详见 `references/handoff-schema.md`，模板 `assets/handoff.template.json`。
 

@@ -1,0 +1,11 @@
+# delegate_to_feature_recorder/v1 — fill placeholders, then SendToAgent + attach/path this file.
+# Required fields only below. Optional tips: entry_url, feature_slug, ui_hooks,
+# demo_prompt, format, cut_policy, constraints, llm_provider (see references/delegate-schema.md).
+schema: delegate_to_feature_recorder/v1
+repo: <owner/name>
+branch: <feat/branch-name>
+commit: <40-char-sha-or-abbrev>
+pr: <https://github.com/owner/name/pull/N-or-number>
+user_outcome: >-
+  <One sentence: what the viewer must see at the end of the recording.>
+reply_to: <agent-id-to-receive-B-message>

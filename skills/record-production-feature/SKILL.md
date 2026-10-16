@@ -159,6 +159,15 @@ python3 scripts/build_feature_media.py \
 - 不把发信、付款、改权限或凭据包含在素材生成授权中。当前请求未包含这些动作时，停在素材和草稿交付；不要主动发出审批请求。
 - 汇报一个功能的用户结果、来源、产物、文件检查、视觉检查、访问检查及实际阻塞。不要称只读抽帧为真实客户端邮箱验收。
 
+### 交付输出 schema（强制）
+
+详见 `references/handoff-schema.md`，模板 `assets/handoff.template.json`。
+
+- **C3 单一事实源**：每次 run 必须写 `runs/<take>/handoff.json`（字段：`status, user_story, funnel_url, funnel_checks[{url,status}], gif, mp4, poster, commit, branch, pr, story_scores[], winner, qa{verdict,hold_s,cjk_frames,notes}, deviations[], artifacts[], known_weaknesses[], issues_for{agent_id:[...]}, next`），提交到功能分支（不是 main），并发布到 funnel；下面两条消息都只能从它渲染，不得另写内容。
+- **给用户的聊天消息**（中文叙述，代码/路径用英文），严格按顺序：A1 状态（`ready` | `ready-with-notes` | `blocked`）→ A2 用户故事「【谁】在【场景】用【功能】完成了【什么】」→ A3 Funnel 链接（已验证 HTTP 200）→ A4 内联 GIF 附件 → A5 故事评分表（每个候选 R1–R7 + 总分，标出胜者）→ A7 QA 结论（pass/notes、结果停留秒数、CJK 检查）→ A8 与请求的偏差 → A10 下一步（一句话；多个选项时用决策表）。A6 产物清单与 A9 已知弱点不放进聊天消息，只写在 `handoff.json`。
+- **给 bot 的消息**（SendToAgent）：B1 固定英文行 `STATUS / RESULT / FUNNEL / COMMIT / ARTIFACTS / QA / ISSUES_FOR_YOU / NEXT` → B2 同字段的 fenced JSON 块 → B3 `handoff.json` 路径及其 funnel URL。
+- 缺任何必填字段或 funnel 未验证 200 时，不得标 `ready`。
+
 ## 验收清单（Acceptance checklist）
 
 在标 `ready` 前逐项确认：

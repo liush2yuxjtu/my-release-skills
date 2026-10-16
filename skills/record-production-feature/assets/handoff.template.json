@@ -1,0 +1,20 @@
+{
+  "status": "ready | ready-with-notes | blocked",
+  "user_story": "【谁】在【场景】用【功能】完成了【什么】",
+  "funnel_url": "https://<host>/<gallery>/<feature>/",
+  "funnel_checks": [{"url": "https://<host>/<gallery>/<feature>/", "status": 200}],
+  "gif": "https://<host>/<gallery>/<feature>/<feature>.gif",
+  "mp4": "https://<host>/<gallery>/<feature>/<feature>.mp4",
+  "poster": "https://<host>/<gallery>/<feature>/poster.png",
+  "commit": "<40-char sha>",
+  "branch": "feat/<branch>",
+  "pr": "https://github.com/<owner>/<repo>/pull/<n>",
+  "story_scores": [{"candidate": "<id>", "R1": null, "R2": null, "R3": null, "R4": null, "R5": null, "R6": null, "R7": null, "total": 0}],
+  "winner": "<candidate id>",
+  "qa": {"verdict": "pass | pass-with-notes | fail", "hold_s": 0, "cjk_frames": 0, "notes": ""},
+  "deviations": [],
+  "artifacts": [],
+  "known_weaknesses": [],
+  "issues_for": {"<agent_id>": []},
+  "next": ""
+}

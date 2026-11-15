@@ -27,7 +27,7 @@ Local or private delivery is the default. Public hosting, a feature branch, a co
 | `shot_list` | Copy of the applicable verified shots from `shotlist.json`; fields in [shot-list-schema.md](shot-list-schema.md). Time base explicitly identifies GIF or MP4. Empty only before a blocked plan exists |
 | `legibility` | Summary `{verdict,file,checks[],readable_result_s,centering_pass,story_test}`; full ROI/strict-beat evidence in [legibility-spec.md](legibility-spec.md). Machine OCR failure and independent visual adjudication remain distinct |
 | `qa` | `{verdict,hold_s,ui_language,notes}`; `pending`, `pass`, `pass-with-notes` or `fail`. CJK is evaluated against the requested native language, never an automatic failure |
-| `model_execution` | `{mode,operation,run_id,edit_run_id,evidence,current_live_e2e,source_live_e2e,disclosure}` or null, as below. `run_id` identifies the original model recording and must match its evidence; reuse/re-edit adds `edit_run_id` for the current edit. `workflow.source_run_id` may separately identify the same original take |
+| `model_execution` | `{mode,operation,run_id,edit_run_id,evidence,current_live_e2e,source_live_e2e,disclosure}` or null, as below. `run_id` identifies the original model recording and must match its evidence; reuse/re-edit adds `edit_run_id` for the current edit. `workflow.source_run_id` may separately identify the same original take. Summary `disclosure` is the exact string from the referenced evidence's `disclosure.label`, never a rewritten explanation or the full disclosure object |
 | `no_inference_reason` | Observed reason when model summary is null. Missing provenance/credentials is not such a reason; an unfilled template remains blocked |
 | `deviations`, `artifacts`, `known_weaknesses` | Lists of actual deviations, artifact paths and limitations. Do not hide a required gate failure as a note |
 | `issues_for` | Optional routing metadata `{agent_id:[issues]}`, empty by default; it does not authorize messages |
@@ -48,6 +48,8 @@ Each gate is `{status,basis,required,evidence[],reason}`. Status is `pass | fail
 ## Model source gate
 
 Follow [model-execution.md](model-execution.md). Scripted/mock replies, prefilled Assistant/TODO/tool events and historical fixtures cannot be feature demonstrations, including PR demos. Browser automation scripts and isolated unit/codec tests are allowed.
+
+Copy the same `model_execution` summary into feature, QA and handoff. Preserve `disclosure` byte-for-byte as the evidence label string, even when writing the rest of the handoff in another language. Put translation, provenance limits and review commentary in separate notes. An unreadable original label stays null with source blocked; a translated or expanded label cannot pass the encoder's consistency check.
 
 Each media take is bound to its own immutable raw hash and original execution record. A separate live run cannot establish this media's origin. In a fresh `live` take only actual successful product execution may set current live E2E PASS. `captured-replay` requires the original successful live source, strict step-match report, real tool execution, zero outgoing model-provider requests and readable `Recorded model response · real tools` label in every derivative; this operation's live E2E is `not-run`. The playbooks do not supply a generic replay adapter.
 

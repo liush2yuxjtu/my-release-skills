@@ -151,6 +151,7 @@
     "Null model_execution is pending until observed no-inference behavior is established; it is not a provenance bypass.",
     "For model media fill mode live/captured-replay, operation fresh-recording/reuse/re-edit/replay-recording, original model run_id matching its evidence, separate edit_run_id for current reuse/re-edit, evidence, current_live_e2e, source_live_e2e and disclosure. workflow.source_run_id may identify the same original take.",
     "Historical reuse/re-edit keeps current_live_e2e not-run and original verified live evidence separately; never infer source pass.",
+    "Summary disclosure is the referenced evidence disclosure.label string copied exactly into feature, QA and handoff; keep translations and provenance explanations in separate notes. Unknown label remains null with source blocked.",
     "Add each delivered file with SHA-bound per-layer checks; unchanged reused checks retain original receipt, date and reviewer.",
     "No public URLs, repository commit or agent message are required for local/private delivery; requested publication must be completed and checked."
   ]

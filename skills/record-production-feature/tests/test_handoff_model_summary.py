@@ -98,6 +98,15 @@ class HandoffModelSummaryTests(unittest.TestCase):
         with self.assertRaisesRegex(builder.Invalid, "separate edit_run_id"):
             self.read_summary(summary)
 
+    def test_summary_label_cannot_be_translated_expanded_or_replaced_with_object(self):
+        for disclosure in ("Translated fixture label", "Live model; extra commentary",
+                           {"label": "Live model"}):
+            with self.subTest(disclosure=disclosure):
+                summary = copy.deepcopy(self.handoff["model_execution"])
+                summary["disclosure"] = disclosure
+                with self.assertRaisesRegex(builder.Invalid, "disclosure must match"):
+                    self.read_summary(summary)
+
     def test_reuse_cannot_claim_a_new_live_pass(self):
         summary = copy.deepcopy(self.handoff["model_execution"])
         summary["current_live_e2e"] = "pass"

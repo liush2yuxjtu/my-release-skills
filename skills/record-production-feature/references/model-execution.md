@@ -7,6 +7,7 @@
 - 每个独立 run 保存 `evidence/model-execution.json`，按 [live 模板](../assets/model-execution.live.template.json) 或 [replay 模板](../assets/model-execution.replay.template.json) 填写；所有路径相对该 run 目录。
 - `feature.json.model_execution`、QA 与 `handoff.json.model_execution` 保留同一摘要：`mode`、`operation`、`run_id`、`evidence`、`current_live_e2e`、`source_live_e2e`、`disclosure`。`evidence` 指向完整模型证据；公开摘要引用可共享的脱敏版本。
 - `operation` 区分 `fresh-recording`、`reuse`、`re-edit`、`replay-recording`。`mode` 描述原片中的模型来源；复用 live 原片仍是 live 来源，不是 captured replay。重剪另记 `edit_run_id`，保留原 `run_id` 与原片哈希。
+- 摘要的 `disclosure` 是字符串，逐字保留所引用证据的 `disclosure.label`；完整证据中的 `disclosure` 则是含 label 等字段的对象。feature、QA 与 handoff 使用同一个摘要值，不翻译、扩写或另造标签。交接说明、来源未核验理由和译文写在独立 notes / handoff text，不能覆盖该身份字段。标签或证据不可读取时摘要用 null 并阻塞来源门禁，不补造可通过编码器的值。
 - 复用/重剪时，本轮 `current_live_e2e=not-run`。原始完整模型证据保留当时的真实验收结果，不改写历史文件；当前摘要在 `source_live_e2e` 关联已核验的原 run、commit、surface、验收回执及哈希。来源未核验时用 null 并将来源门禁记为 blocked，不能凭 README 主张填 pass。这个摘要与原始运行证据的时间范围不同，必须明确标出。
 - 产品本身不涉及模型推理的真实操作可用 `model_execution=null`，在 QA 说明观察到的原因与初态来源。预设模型回复、预填生成结果或伪造调用不能用 null 绕过；不新增“预生成结果”模型演示路线。
 - 对每条媒体保留原片路径/哈希与 run/take id；已有 GT 重剪沿用原模型来源并另记编辑 run，不能声称新调用。不同版本、surface 和运行之间的证据不互换。

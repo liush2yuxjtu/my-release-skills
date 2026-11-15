@@ -1,20 +1,31 @@
-# delegate_to_feature_recorder/v1.1 — fill placeholders, then SendToAgent + attach/path this file.
-# Required fields below. Recommended tips: record_machine, publish_programs_repo.
-# Optional tips: entry_url, feature_slug, ui_hooks, demo_prompt, format, cut_policy,
-# constraints, model_mode, replay_source, model_budget. llm_provider is ignored/legacy
-# (see references/delegate-schema.md). Scripted/mock model recording is prohibited.
-# Still accepts schema …/v1; missing recommended tips → defaults + deviations note.
+# Inbound request; YAML or compact text is sufficient. v1 also accepted.
+# Required: one visible outcome and verifiable source identity.
+# Source alternative: use source_evidence for an actual package/deployment/build
+# instead of repo+commit/pr. Do not fabricate GitHub release or branch metadata.
 schema: delegate_to_feature_recorder/v1.1
-repo: <owner/name>
-branch: <feat/branch-name>
-commit: <40-char-sha-or-abbrev>
-pr: <https://github.com/owner/name/pull/N-or-number>
 user_outcome: >-
-  <One sentence: what the viewer must see at the end of the recording.>
-reply_to: <agent-id-to-receive-B-message>
-# recommended (omit → defaults + note in deviations)
-record_machine: auto   # box | mac_mini | auto
-publish_programs_repo: liush2yuxjtu/feature-recorder
-# model_mode: live   # live | captured-replay; default live
-# replay_source:     # successful original live run + evidence/capture for replay
-# model_budget:      # max_takes, max_live_requests, request_timeout_s, take_timeout_s
+  <One visible result, readable for at least 3 continuous seconds.>
+repo: <owner/product-repo>
+commit: <source-sha>
+# branch: <source-branch>
+# pr: <PR-number-or-URL>
+# source_evidence: [<authorized-build-or-deployment-evidence>]
+source_channel: production  # production | beta | preview | pr | working-alpha
+# version: <actual-version>
+# entry_url: <actual-target>
+record_machine: auto        # auto | work | box (legacy Work alias) | mac_mini
+delivery_target: local     # local | private | public
+# delivery_destination: <explicit-persistent-target>
+publication_requested: false
+# publish_programs_repo: <explicitly-requested-programs-repository>
+# reply_to: <optional-agent-id; not authorization to send>
+# notify_authorization: <reference-to-explicit-message-instruction>
+# existing_media: [<candidate-manifest-or-path>]
+format: both               # gif | mp4 | both
+# ui_language: <actual-native-target-language>
+# constraints: []
+# model_mode: live          # live | captured-replay; scripted/mock prohibited
+# replay_source:            # verified original live evidence + actual project adapter
+# model_budget:            # max_takes, max_live_requests, request_timeout_s, take_timeout_s
+# fresh_live_required: false
+# research_mode: auto       # auto | verified-reuse | standard | deep

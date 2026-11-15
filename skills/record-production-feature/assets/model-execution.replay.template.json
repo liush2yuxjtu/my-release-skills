@@ -1,6 +1,7 @@
 {
   "schema": "feature-model-execution/v1",
   "mode": "captured-replay",
+  "operation": "replay-recording",
   "run_id": "<current-replay-take>",
   "phase": "record",
   "product": {"commit": "<source-matching-sha>", "version": "<observed-version>", "surface": "browser"},

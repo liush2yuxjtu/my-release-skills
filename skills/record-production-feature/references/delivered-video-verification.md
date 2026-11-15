@@ -19,13 +19,21 @@ The script deliberately leaves visual and playback verdicts pending. File PASS i
 
 ## Play every complete MP4 at normal speed
 
-From a project with Playwright installed, save a private input list such as `[{"path":"assets/feature-en.mp4"},{"path":"assets/feature-zh.mp4"}]`, then run:
+From a project with Node, Playwright and ffprobe available, save a private, nonempty JSON array such as `[{"path":"assets/feature-en.mp4"},{"path":"assets/feature-zh.mp4"}]`, then run:
 
 ```bash
 node scripts/verify_playback.mjs assets.json qa/player-1
 ```
 
-The script uses an isolated Chromium context for each file, serves only the selected media over a loopback HTTP server with Range support, and plays sequentially at 1× until `ended`. It records media errors, duration, terminal currentTime, decoded/displayed frame counters, dropped frames and wall-clock checkpoints. It verifies that the source hash does not change during playback. Use a matching installed browser by default; an explicitly supplied executable must be identified honestly in the run receipt.
+Paths in this array are relative to the current project directory. An optional `sha256` on each entry freezes the expected source bytes. Every selected entry gets its own `asset-N.json`; `summary.json` retains the complete selected scope and the overall player result. Empty or malformed lists, missing files, missing modules and browser launch failures exit nonzero and retain a failure summary whenever a new output directory can be created. An existing output directory or file is never changed. Keep the new private directory and its receipts outside this public distribution.
+
+The script resolves project-local `playwright` by default. `--playwright-module PATH` or `PLAYWRIGHT_MODULE_PATH` may identify an already installed Playwright/Playwright Core package directory or entry file; these are filesystem paths relative to the current project, not package names. `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` may explicitly select an installed Chromium. No dependencies or browsers are downloaded. The v2 receipts bind the resolved package entry/version, launch executable, actual running executable SHA-256 and metadata, binary version and Chromium-reported version. A launcher script and its browser binary are reported separately. The running version must match the actual executable version; an override is never presented as the Playwright default.
+
+Each file uses a fresh isolated Chromium context and a tokenized loopback server exposing only that selected media plus a fixed local player. The server supports GET, HEAD and single byte ranges, rejects invalid ranges, and never exposes a workspace directory. The browser can request only those two local URLs. Playback begins at the start, stays at 1× without seeking and runs until `ended`. The receipt records media errors, duration, terminal currentTime, intrinsic dimensions, decoded and total frame counters, an explicitly labeled displayed-frame estimate, dropped frames, frame callbacks and wall-clock checkpoints. The observed duration and dimensions must match ffprobe metadata. These checks do not replace the full file/decoder gate.
+
+The source is opened read-only and kept bound to the selected file descriptor. Independent SHA-256 reads before and after playback, file identity, size, modification/change times and the selected path must all match. Sources are never rewritten. The defaults are at most 32 selected entries, 2 GiB per file, a 1 MiB list and 180,000 ms per playback. `--timeout-ms` accepts 1,000–600,000 ms; a file longer than the selected bound fails. Setup, hashing, subprocess and cleanup waits are also bounded. The script adds no browser policy-disabling flags and uses no saved profile.
+
+Player PASS concerns only full normal-speed playback of the exact bytes in the recorded Chromium environment. Audio is muted, so audibility stays pending. Visual review stays pending and model execution stays unevaluated on both PASS and FAIL receipts. Do not copy a player result into those separate gates.
 
 Dropped frames are recorded, not hidden. A resource-starved cloud browser is not proof of a broken source file. If motion looks wrong or drop rates are high, pause concurrent rendering and replay the same SHA at light load before diagnosing the asset. `video.play()` resolving, metadata loaded, seeking to the end, or FFmpeg decoding alone do not establish full player playback.
 

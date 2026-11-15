@@ -1,0 +1,37 @@
+{
+  "schema": "feature-media/v1",
+  "feature_id": "<one-observable-user-result>",
+  "run_id": "<this-edit-run>",
+  "source": {
+    "path": "raw/full.mp4",
+    "sha256": "<actual-source-sha256>",
+    "kind": "full-recording",
+    "complete": false
+  },
+  "ui_language": {
+    "code": null,
+    "preflight_evidence": null,
+    "postcheck_evidence": null
+  },
+  "production_evidence": [],
+  "discovery_evidence": [],
+  "rehearsal_evidence": [],
+  "runtime_markers": null,
+  "take_verification": [],
+  "clip_test_cutout": {
+    "verdict": "pending",
+    "reason": null,
+    "evidence": []
+  },
+  "model_execution": null,
+  "no_inference_reason": null,
+  "proof_interval_s": null,
+  "mp4": {},
+  "gif": {
+    "start_s": 0,
+    "duration_s": 8,
+    "width": 520,
+    "fps": 12,
+    "max_bytes": 3145728
+  }
+}

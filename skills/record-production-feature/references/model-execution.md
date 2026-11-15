@@ -5,7 +5,9 @@
 ## Files and identity
 
 - 每个独立 run 保存 `evidence/model-execution.json`，按 [live 模板](../assets/model-execution.live.template.json) 或 [replay 模板](../assets/model-execution.replay.template.json) 填写；所有路径相对该 run 目录。
-- `feature.json.model_execution`、QA 与 `handoff.json.model_execution` 保留同一摘要：`mode`、`run_id`、`evidence`、`current_live_e2e`、`source_live_e2e`、`disclosure`。`evidence` 指向完整模型证据；公开摘要引用可共享的脱敏版本。
+- `feature.json.model_execution`、QA 与 `handoff.json.model_execution` 保留同一摘要：`mode`、`operation`、`run_id`、`evidence`、`current_live_e2e`、`source_live_e2e`、`disclosure`。`evidence` 指向完整模型证据；公开摘要引用可共享的脱敏版本。
+- `operation` 区分 `fresh-recording`、`reuse`、`re-edit`、`replay-recording`。`mode` 描述原片中的模型来源；复用 live 原片仍是 live 来源，不是 captured replay。重剪另记 `edit_run_id`，保留原 `run_id` 与原片哈希。
+- 复用/重剪时，本轮 `current_live_e2e=not-run`。原始完整模型证据保留当时的真实验收结果，不改写历史文件；当前摘要在 `source_live_e2e` 关联已核验的原 run、commit、surface、验收回执及哈希。来源未核验时用 null 并将来源门禁记为 blocked，不能凭 README 主张填 pass。这个摘要与原始运行证据的时间范围不同，必须明确标出。
 - 产品本身不涉及模型推理的真实操作可用 `model_execution=null`，在 QA 说明观察到的原因与初态来源。预设模型回复、预填生成结果或伪造调用不能用 null 绕过；不新增“预生成结果”模型演示路线。
 - 对每条媒体保留原片路径/哈希与 run/take id；已有 GT 重剪沿用原模型来源并另记编辑 run，不能声称新调用。不同版本、surface 和运行之间的证据不互换。
 
@@ -21,8 +23,8 @@
 | `requests`, `markers`, `takes_ledger` | 逐条请求/响应/工具关联、单调时间 marker、所有尝试记录；路径真实存在 |
 | `raw` | 本 take 实际原片路径与 SHA-256；中途失败标明 incomplete |
 | `outcome` | 业务断言、实际结果和证据；`pending` 不能当 pass |
-| `current_live_e2e` | `not-run` / `pass` / `fail` / `blocked`；只有本 take 真实产品 live 流程可 pass；replay 固定 not-run |
-| `source_live_e2e` | live 用 null；replay 关联原始 live run、commit、surface、通过状态与证据/哈希 |
+| `current_live_e2e` | `not-run` / `pass` / `fail` / `blocked`；只有本 take 真实产品 live 流程可 pass；reuse、re-edit 与 replay 固定 not-run |
+| `source_live_e2e` | fresh live 用 null；复用/重剪关联已核验的原 live 证据，未核验用 null 并阻塞来源门禁；replay 必须关联已通过的原始 live run、commit、surface 与证据/哈希 |
 | `replay` | live 用 null；replay 必须有 source trace/capture/raw 哈希、逐步匹配报告、真实工具记录、网络模型请求数 0、timing 策略 |
 | `disclosure` | live 记录实际模式；replay 的可见标签证据及交付文字必须同时存在 |
 

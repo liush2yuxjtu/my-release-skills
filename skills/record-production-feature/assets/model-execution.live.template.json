@@ -1,6 +1,7 @@
 {
   "schema": "feature-model-execution/v1",
   "mode": "live",
+  "operation": "fresh-recording",
   "run_id": "<current-take>",
   "phase": "record",
   "product": {"commit": "<actual-source-sha>", "version": "<observed-version>", "surface": "browser"},

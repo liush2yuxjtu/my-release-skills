@@ -2,16 +2,17 @@
 
 Every run writes `runs/<take>/shotlist.json` **before** the camera pass (plan) and updates it **after** verification (measured `legibility_px`, centering). `handoff.json.shot_list[]` is a copy of `shots[]`. Template: `assets/shotlist.template.json`.
 
-Times are in **delivered-GIF seconds** (0 = first GIF frame). Add `t_raw_start` for the GT/master timeline. Coordinates are CSS px of the recorded viewport (e.g. 1920×1080), independent of DPR.
+Declare `timeline_kind` as `gif` or `mp4`; times are in that delivered file's seconds (0 = its first frame). Add `t_raw_start` for the GT/master timeline. Declare `coordinate_space` as `css-px` only when the actual viewport/DPR is known, or `decoded-source-px` for measured existing footage. Use `crop_px`/`roi_px` in the latter case; do not invent DOM coordinates or DPR from a historical GIF.
 
 ## File
 
 | field | type | notes |
 |---|---|---|
 | `take`, `edit` | string | e.g. `generative-v1-take5`, `edits/zoom-v6` |
-| `gif` | `{width,height,fps,frames,duration_s,window_raw_s:[t0,t1]}` | delivered GIF |
-| `click_gif_s` | number | the one action moment |
-| `camera` | string | camera script path |
+| `timeline_kind`, `coordinate_space` | string | actual delivered timeline and declared pixel coordinates |
+| `gif` / `mp4` | `{width,height,fps,frames,duration_s,window_raw_s:[t0,t1]}` or null | actual format; unrequested format null; variable GIF delays recorded separately |
+| `click_gif_s` / `click_mp4_s` | number or null | actual action in that timeline; unknown remains null |
+| `camera` | string or null | actual camera script, or null for unchanged/static framing |
 | `coords` | string | coordinate space note |
 | `shots` | `shot[]` | in time order, covering 0…duration without gaps |
 
@@ -20,20 +21,20 @@ Times are in **delivered-GIF seconds** (0 = first GIF frame). Add `t_raw_start` 
 | field | type | notes |
 |---|---|---|
 | `id` | string | `S1`,`S2`…; transitions `T23` (between S2 and S3) |
-| `t_start`, `t_end` | number s | GIF time |
+| `t_start`, `t_end` | number s | declared delivered timeline |
 | `t_raw_start` | number s | master/GT time |
 | `beat` | string | `B0 establish` / `B1 before` / `B2 action` / `B3 result` / `B4 payoff` / `transition` |
 | `framing` | `full` \| `medium` \| `close` | full = whole viewport (zoom≈1); medium ≈1.2–2.5×; close ≥2.5× on one ROI |
 | `zoom` | number | camera zoom at the hold (1 = full viewport) |
-| `crop_css` | `[x,y,w,h]` | crop rect at the hold |
-| `roi_css` | `[x,y,w,h]` \| null | the subject rect (DOM box / OCR box); must be inside `crop_css` |
+| `crop_css` / `crop_px` | `[x,y,w,h]` | crop rect at the hold in the declared coordinate space |
+| `roi_css` / `roi_px` | `[x,y,w,h]` \| null | subject rect; must be inside its crop |
 | `roi_center_offset_pct` | `[dx,dy]` | (ROI centre − crop centre) / crop size × 100; gate ≤10 |
 | `roi_in_frame` | bool | |
 | `focus` | string | the UI label(s) in focus, verbatim, e.g. `Tweaks > Prepared for this design > Mood: Editorial / SaaS / Playful` |
 | `pointer` | string | pointer action: idle / glide to X / click X at t / parked off frame |
 | `text_expected` | string[] | on-screen text that should be readable in this shot (verbatim) |
 | `legibility` | string \| null | id of the legibility check this shot carries |
-| `legibility_px` | `{metric,measured,threshold,frame,pass}` \| null | measured at the delivered size (§7.1) |
+| `legibility_px` | `{metric,measured,threshold,frame,pass}` \| null | measured at the delivered size (SKILL §6.1) |
 | `transition_in` | string | e.g. `push-in 0.6 s`, `pull-out 0.3 s then push-in 0.3 s`, `cut` |
 | `ease` | string | e.g. `cosine, log-zoom` |
 | `hold_s` | number | settled hold (camera still) |
@@ -41,14 +42,14 @@ Times are in **delivered-GIF seconds** (0 = first GIF frame). Add `t_raw_start` 
 
 ## Design rules
 
-- One **close** shot per key text: before-state, the clicked control (at the click moment), the result, and the CTA if it changed. Zoom = `threshold_px ÷ (glyph_css_px × gif_width/viewport_width)`; record at DPR 2 when zoom > ~3.
-- The click happens inside a close shot of the control; the pointer must not cover the label.
-- Readable result (px-gate) ≥3 s total across result shots; end on the same framing as the first shot so the loop is seamless.
-- Transitions ≤0.6 s, eased; no speed-up, no captions (pure-screen).
+- Cover each claimed key text: before-state, clicked control, result and changed CTA. Use a close-up only when needed for readability; one static framing may cover all of them. Do not invent camera motion unsupported by the actual editor.
+- The clicked control must be readable at the action; the pointer must not cover its label.
+- Readable result (pixel gate) must last **at least 3 continuous seconds** after the framing settles. An attractive loop cannot waive the action/result proof.
+- Any actual camera transitions are eased and ≤0.6 s; pure-screen by default. External speed changes or editorial holds require explicit source mapping under the delivered-video contract; the bundled builder implements neither.
 
-## Chat rendering (A6s 镜头分镜, right after A5 故事评分表)
+## Optional chat rendering
 
-Compact Markdown table, one row per shot (transitions may be merged into the next row's 转场 column):
+Keep the full list in the handoff. When requested, render a compact table, one row per shot (transitions may be merged into the next row's 转场 column):
 
 | # | 时间 s | beat | 景别/倍数 | 焦点 | 指针 | 画面文字 (px) | 转场 | 停留 s |
 |---|---|---|---|---|---|---|---|---|
@@ -56,4 +57,4 @@ Compact Markdown table, one row per shot (transitions may be merged into the nex
 
 ## Bot rendering
 
-B1 line: `SHOTS: S1 full 0-0.5 | S2 close5.8x hero 0.5-1.9 | ...` ; B2 JSON includes `shot_list`.
+Only when an agent notification is explicitly authorized: `SHOTS: S1 full 0-0.5 | S2 close5.8x hero 0.5-1.9 | ...`; its JSON includes `shot_list`. Otherwise provide forwardable text without sending it.

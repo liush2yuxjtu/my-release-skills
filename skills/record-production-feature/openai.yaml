@@ -1,23 +1,23 @@
 interface:
   display_name: Production Feature Media
-  short_description: Record one shipped feature as verified video and GIF
+  short_description: Reuse or record one verified feature as video and GIF
   default_prompt: >-
-    Use $record-production-feature to turn one verified production feature
-    into a full MP4 and an 8-second email GIF. Enforce hard rules: verify the actual native
-    target UI language before recording and in delivered frames; use English by default
-    for unspecified ChatCut release media, and preserve requested native languages;
-    mandatory take verification before keep/discard (fixed-time frame strip
-    vs storyboard plus timing cross-check; log verdict/reason to runs/takes.log); and
-    mandatory test cutout before clip selection (≥3 start/mid/end stills with the same
-    demo cutout tool or noted proxy; reject on holes/fragments/color blending; gate above
-    messiness score; record clip_test_cutout). For model-dependent features, use only
-    live API execution or strictly matched captured-model replay. Follow the live-model-recording
-    and captured-model-replay playbooks. Scripted/mock model responses and prefilled
-    Assistant/TODO/tool events are prohibited, including PR demos. Bind each media take
-    to its own model evidence; disclose replay visibly and in handoff, execute tools for
-    real, and keep current live E2E not-run for replay.
-  icon_small: assets/icon.svg
-  icon_large: assets/icon.svg
+    Use $record-production-feature to deliver one verified feature as the requested
+    MP4/GIF files. Begin with bounded package, source, access and dependency preflight.
+    Inspect existing manifests/media first; use verified reuse for unchanged scope and
+    exact SHA-bound QA, filling only missing gates. Keep production or explicitly requested
+    preview/build provenance separate from current environment/live checks and local
+    media tests. Preserve immutable originals and target native UI language. New takes
+    require real UI discovery, rehearsal, fixed-time frame/timing verification before
+    keep/discard, and take logs. For model-dependent media allow only live or strictly
+    matched captured replay; scripted/mock/prefilled model output is prohibited. Preserve
+    original evidence during reuse, identify current operations honestly, and visibly
+    disclose replay. Verify every delivered file with full decode, actual MP4 1x playback
+    to ended, actual frames, 16/9/7-pixel legibility defaults, at least 3 continuous readable
+    result seconds and an independent cold reader. Default to persistent local/private
+    delivery with a truthful handoff; public hosting, code publication and bot messages
+    require explicit scope, and an already requested publication needs no redundant
+    permission. Conditional stock/cutout work applies only when the selected story needs it.
 policy:
   products:
   - chatgpt

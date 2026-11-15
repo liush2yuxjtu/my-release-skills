@@ -1,266 +1,167 @@
 ---
 name: record-production-feature
-description: Turn one verified production feature into one focused GIF or video. Use for feature-to-GIF requests, release demo assets, one-feature screen recordings, 8-second email GIFs, or Resend broadcast demonstration media. Discover the real UI, record on Cloud / Work or the user-selected host through ui-demo, preserve immutable full recordings, create tested MP4/GIF derivatives, inspect actual frames, and prepare a traceable email handoff without sending a broadcast.
+description: Turn one verified product feature into one focused GIF or video, defaulting to production or the explicitly requested preview/build. Use for feature-to-GIF requests, release demo assets, one-feature screen recordings, or 8-second email GIFs. Check tools first, prefer verified recordings, preserve immutable originals/model provenance, inspect delivered frames and playback, and deliver a traceable local/private package. Publish only when requested; never send a broadcast by default.
 ---
 
 # Record Production Feature
 
-由唯一 chatcut-release 入口在有效人工 feature_shortlist 选择后按需调用，或用于已有明确手动素材任务。入口的 selected IDs 是范围；不再要求第二次录制许可。显式 plan-only 仅准备计划。完整 full_scope 与 GT 证据保持可追溯。
+把一个可核实的用户功能，变成一份可追溯的录制素材包。默认核实 production；用户明确要求 beta/PR/preview/Working Alpha 时按该目标核实并标明，不能冒充生产上线。已有明确手动素材任务可直接进入；release 入口的人工 feature IDs 就是范围，不再要求第二次录制许可。显式 plan-only 只准备计划。
 
-把一个已在生产环境可用的用户功能，变成一份可追溯的录制素材包。
-默认保留完整 GT 原片，并交付完整 MP4 与 8 秒 GIF。用户只要一种格式时，使用 `--format mp4` 或 `--format gif`。
+默认保留完整 GT 原片，交付完整 MP4 与约 8 秒 GIF；按用户要求只交一种格式也有效。默认在持久工作区交付本地文件，或使用用户指定且已有权限的私有目录。**公开发布、提交代码、建 PR、改分享权限和 bot 消息都不是录制的默认前提。** 用户已明确要求其中某项时，在已有授权范围内完成，不重复索取许可。
 
-固定验收规则和编码脚本；让 agent 根据真实 UI 决定故事、操作、取景和剪辑区间。
+先检查工具与访问，再查找匹配的已有素材。默认 pure-screen：不加讲解字幕、发布角标、装饰 callout、旁白、音乐或转场，保留原生应用文字、字幕功能和普通鼠标。章节写 metadata；讲解层仅按用户要求开启。公开脚本、模板和示例不得包含私人路径、账户、凭据、私有 receipts 或客户数据。
 
-先查找符合版本、功能与画面要求的已有录制；匹配时复用。默认 pure-screen：不加讲解字幕、发布角标、装饰性 callout、旁白、音乐或转场，保留原生应用文字、字幕功能和普通鼠标。章节只写 metadata；讲解层仅按用户明确要求开启。GIF 给内嵌预览，脚本解释用 ELI5，可调项用 Markdown 表格。真实脚本按 `examples/{version_slug}/` 保存；完整录制示例见仓库的 `skills/record-full-walkthrough/examples/0.6.6-to-0.6.7/example.md`。
+## 0. 有界 preflight 与路线选择
+
+在故事调研、下载素材、启动应用或长时间重试前，写 `evidence/preflight.json`：
+
+先运行包内 [preflight.py](scripts/preflight.py)：`python3 scripts/preflight.py --phase encode --format both --execution-route work --project '<actual-project>'`。按实际所需层选择 `record` 或 `verify`、所需格式与 OCR 语言；只检查已有文件时可独立完成 file gate。其 `dependencies-ready` 只说明依赖可用，访问、来源、真实模型与画面仍须分别核实。
+
+1. **范围与交付**：一个 `user_outcome`、产品/版本/真实 UI 语言、所需格式、local/private/public 目标。区分 production、beta、preview，不能互换证明。记录已有发布授权；未给出则 `publication.requested=false`。
+2. **包与命令**：确认要用的模板/脚本真实存在，先读 `--help`；检查 Python/Node、FFmpeg/ffprobe、Pillow，以及所需 Playwright/Chromium 和 OCR 语言数据。记录实际版本与缺口，不能把文档命令当作已安装能力。编码前运行 builder `--dry-run`；它不是媒体或模型验收。
+3. **访问与来源**：一次检查产品来源、已有素材/manifest/原片、目标 UI 及所需模型授权。使用既有身份；401/403/404、登录墙、缺浏览器和模型额度分别记录，不把访问错误当成对象不存在。不输出凭据，不创建新账户/网络通道。
+4. **主机**：记录实际 OS、hostname、工作目录、空间和依赖。新录制默认至少 10 GiB；纯已有文件检查按文件大小说明空间需求。UI/浏览器检查只在所需录制或播放器 gate 执行，不阻塞可独立完成的本地文件检查。
+5. **预算与检查点**：初次包/访问/来源诊断默认约 5 分钟，先用一次目录/manifest 批量查询筛选最多 5 个相关候选。正在取得有效证据时可继续；已确认缺原片、模型日志或所需访问时停止等价重试，及时交付 blocked 的分层事实，除非出现新的可用路线。不为固定范围复用做广泛外网研究。模型 take/请求/超时另设硬上限。
+
+选择路线，在 `handoff.json.workflow` 写明：
+
+| 路线 | 条件 | 必做工作 |
+|---|---|---|
+| `verified-reuse` | 原片/成片匹配功能、请求 channel 的来源、surface、语言、模型来源、格式和尺寸 | 核对源 SHA-256 与请求范围；沿用有效的 SHA 绑定检查，只补缺失/失效的 gate |
+| `re-edit` | 可信原片可用，但窗口、尺寸、取景或阅读时间需改 | 保留原片，创建新编辑/源映射；新文件重跑完整媒体 QA |
+| `new-recording` | 无匹配素材且真实目标 UI/录制路线可用 | discover → story → storyboard → rehearse → record → inspect |
+
+**快速复用不降低门槛。** 无法读取证据、同名文件、只有 GIF PASS、另一版本/另一 take 的 PASS 都不能继承。完全相同字节与交付范围的 file/player/visual/legibility/cold-reader receipts 可沿用，保留原日期/检查人和 `basis=reused`，不得伪装本次执行。缺某层就补某层，无需重录、重做外网调研或编造新故事。来源、字节、预期文字、语言或交付尺寸变更使相关 gate 失效。用户或产品仓库要求 fresh live gate 时照常执行。
+
+来源身份仍无法建立时，不反复做美化重剪；先交付原样文件检查与缺口。明确的诊断任务可继续修复可追溯的媒体，但来源 gate 保持 pending/blocked，修复不构成上线或模型来源证据。
+
+### 分层报告，不能互相代替
+
+`handoff.json.gates` 分别记录 `production_source`（兼容字段名；核实实际请求的 channel）、`model_source`、`current_environment`、`current_live_e2e`、`file`、`playback`、`visual`、`legibility`、`cold_reader`、`delivery_access`。每层用 `pass | fail | blocked | not-run | not-applicable`，写证据、原因、是否依请求必需及本次/复用依据。
+
+- 缺所请求 channel/model 来源 ⇒ 来源 `blocked`；仍可交真实完成的本地文件检查，不能宣称该目标 ready。已验证的非生产目标可 ready，但只表示该已标明的目标。
+- 当前 UI、浏览器、凭据或模型不可用 ⇒ 相关当前 gate `blocked/not-run`；不据此判旧文件损坏，也不把 FFmpeg PASS 写成 live E2E PASS。
+- 复用/重剪没有新模型运行 ⇒ 当前摘要写 `operation=reuse/re-edit`、当前 edit run 与原始 source run，`current_live_e2e=not-run`，单独关联已核实原 live 来源，未知不得推断 pass。完整原证据保留历史结果。无需 fresh gate 的历史素材可交付，但明确未重跑 live。
+- 未请求公开发布 ⇒ `publication.status=not-requested`；没有 public URL、HTTP 200 或代码提交不阻塞合格 local/private 交付。
 
 ## 模型依赖录制：只允许 live 与 captured replay
 
-本节适用于 production、beta、PR/preview、预演、新录制和已有素材复用，并覆盖下游 ui-demo、项目录制器及历史示例中允许 scripted 模型的旧约定。
+适用于 production、beta、PR/preview、预演、新录制及已有素材复用，覆盖下游/历史示例允许 scripted 模型的旧约定。
 
-- **禁止 scripted 模型模式**：不得用手写/生成的预设模型回复、返回合成答案的 mock 模型 API、预填 Assistant 消息或 TODO/工具事件来制作功能演示；标注 scripted、使用真实工具、PR 演示或凭据缺失均不构成例外。浏览器操作脚本、真实演示输入和独立的单元/编码 fixture 测试仍可使用；它们不能充当模型录制素材。历史 scripted/fixture 原片及更正记录只保留审计，不再作为当前功能素材候选。
-- **默认 live**：从真实产品 UI 调用已授权的真实模型 API，由模型实际决定响应与工具路径。按 [playbooks/live-model-recording.md](playbooks/live-model-recording.md) 冻结起始条件、等待可观察状态、执行有界重试，并记录所有 take。低温度或 seed 不保证确定性；预演通过也不保证录制复现相同文案。
-- **允许 captured-replay**：仅回放同一产品流程中捕获的真实 API 响应，按 [playbooks/captured-model-replay.md](playbooks/captured-model-replay.md) 校验来源、每步请求上下文和真实工具结果。不得编辑响应、编造 streaming/tool call、静默匹配到别的请求或回退 live/scripted。原片复用/重剪与重新执行 replay 分别记录。
-- **能力与素材分别验收**：产品模型端到端通过只能来自实际产品中的 live 运行，直接 API ping 不算。replay 当前运行的 `current_live_e2e` 必须为 `not-run`，原始 live 验收单独关联，不能转写成“本次真实调用成功”。来源 surface、commit、输入或工具契约不同的验收不得替素材背书；产品仓库要求 fresh live gate 时照常执行。
-- **replay 来源必须可见**：界面模型名称或持续可读的来源标签使用 `Recorded model response · real tools`，交付说明同样声明。此来源标签是 pure-screen 的必要例外；不得在裁切、缩放或去字幕时移除，不增加其他讲解层。无法清楚标明来源则该 replay 素材 `blocked`。
-- **每条素材绑定自己的证据**：按 [references/model-execution.md](references/model-execution.md) 在 `feature.json`、QA 与 handoff 保留一致的 `model_execution`，记录模式、当前 take、原片哈希、调用日志及独立的 live 验收状态。真实模型受阻且没有合格 capture 时标 `blocked`，不能降级 scripted。真实产品本身不调用模型的操作记录 `model_execution=null` 和可观察原因，不伪造模型调用。
+- **禁止 scripted 模型**：不得用手写/生成的预设回复、合成答案 mock API、预填 Assistant/TODO/工具事件制作功能演示。标注 scripted、真实工具、PR 演示或缺凭据都不是例外。浏览器操作脚本、真实输入、独立单元/编码 fixture 可用，但不是模型录制证据；历史 fixture 只保留审计。
+- **默认 live**：真实产品 UI 调用已授权的真实模型，由模型决定响应/工具路径。按 [live playbook](playbooks/live-model-recording.md) 冻结初态、等待可观察状态、有界重试并保留所有 take。低温度/seed 不保证相同结果。
+- **允许 captured-replay**：仅回放同一产品流程捕获的真实 API 响应，按 [replay playbook](playbooks/captured-model-replay.md) 校验来源、逐步上下文、真实工具结果。不得编辑响应、编造 streaming/tool call、错配请求或静默回退。复用/重剪与重新执行 replay 分别记录。
+- **能力与素材分开**：live E2E PASS 只来自实际产品流程，API ping 不算。replay 本次 `current_live_e2e` 固定 `not-run`，原始 live 验收另行关联；surface、commit、输入或工具契约不同的通过不能替素材背书。
+- **replay 来源可见**：模型名称或持续可读标签使用 `Recorded model response · real tools`，交付文字同样声明。这是 pure-screen 的必要例外，裁切/缩放不能移除；不可读则 `blocked`。
+- 按 [model-execution.md](references/model-execution.md) 绑定 take、原片哈希、逐条调用和独立 live 状态。无模型操作用 `model_execution=null` 加观察依据。无真实模型且无合格 capture 时 `blocked`，不能降级 scripted。
 
-这两个 playbook 是执行规范与证据模板，不包含通用 replay adapter；先发现和验证项目实际能力，缺失的 adapter 如实记为 `blocked`，不能仅凭文档声明 replay 已实现。
+这些 playbook 是规范和证据模板，**不含通用 capture/replay adapter**。先验证项目实际实现，缺失如实报告，不能凭文档声明 replay 已实现。
 
-## 执行主机：Cloud / Work 与 Mac mini
+## 主机与控制能力
 
-- **允许在 Cloud / Work 完成预演、浏览器录制、编码、FFmpeg 抽帧和全部草稿/最终渲染。** 未指定主机时可直接选择当前具备依赖的云端机器；不需要为云端路线再次请求许可。
-- 用户指定主机时优先遵守；已明确允许云端后，Mac mini 断连或返回 429 不再是停止云端录制的理由。显式只允许某台主机的限制仍须遵守。
-- 本节覆盖本技能下文及 ui-demo、Work execution mapping、renderer reference 中旧的 Mac-mini-only 默认规定。主机选择不改变 brief → discover → rehearse → record → inspect 的验收顺序。
-- 在实际执行主机检查并记录操作系统、hostname、项目目录、至少 10 GiB 可用空间、Node、匹配的 Playwright/Chromium、FFmpeg 和 ffprobe；还须验证实际 UI 与所需真实模型调用。只有 Mac mini 路线要求 Darwin，不能伪造平台或 hostname。
-- 媒体脚本支持显式路线时，Cloud / Work 使用 `--execution-route work --expected-host <实测主机名>`；Mac mini 使用对应真实主机。缺少脚本或参数时先核实实现，可复用项目真实录制器并保留相同证据，不通过伪造平台绕过检查。
-- 独立云端浏览器使用隔离的工作区、profile 和输出目录。Mac mini 的全机锁仅适用于共享其桌面、原生应用或 CDP 资源的路线；不能把 Mac 专属锁或私有路径作为独立云端录制的前提。
-- 凭据留在已授权环境，不随脚本或媒体传输。真实 API、完整原片、runtime markers、结果停留和实际画面检查要求保持不变。真实模型或依赖不可用时报告具体缺口，不用模拟回复冒充真实执行。
+- 当前具备依赖的 Cloud / Work 可完成浏览器预演、录制、编码、抽帧和渲染，无需额外许可。遵守用户指定主机；允许云端后，其他主机断连不是停止云端路线的理由。
+- 记录真实主机/平台。Darwin 只对 Mac 路线有意义。builder 的 `--execution-route work --expected-host <实测主机名>` 或 `--execution-route mac-mini` 必须与实测一致，不能伪造平台绕过检查。
+- 独立浏览器用隔离 profile/工作区。共享 Mac 桌面、原生应用或 CDP 必须先发现并取得该环境已有的机器级锁，排队使用，不抢占、kill 他人进程或删锁文件。独立云端浏览器不依赖 Mac 锁。
+- **Mac 锁 CLI、bridge、原生控制与共享 worker 不随本包提供。** 仅在环境已配置并验证时使用；缺失则该路线 `blocked`，可继续已允许的其他路线。私人路径、账户与固定端口不是通用前提。
+- 凭据留在授权环境。`ui-demo` 或项目录制器可供发现/录制；先读其实际可用说明并验证能力，不能用 Web 页面替代用户要求的 Desktop UI。
 
-## 硬性规则 / Hard rules
+## 1. 核实功能与输入
 
-以下规则在其适用范围内不可跳过；与下文章节冲突时以本块为准。
+- 读取所请求 channel 的真实发布/部署/构建记录、tag/source SHA、相关 PR/功能开关及应用版本。默认 production；beta、合并 PR、营销邮件本身不是生产上线证明。
+- 官方更新清单、签名包、包内版本及打包 SHA 也可形成相应来源链，不强制 GitHub Release。未知项列出，不编造事件。
+- 每功能只对应一个可观察结果，按结果合并相关 PR；不可见重构不单独录 GIF。用无敏感数据的独立演示项目和已授权登录，不修改客户项目。
+- 其他 agent 委托用 [delegate-schema.md](references/delegate-schema.md) 与 [模板](assets/delegate.template.yaml)。需要可核实的产品/来源定位与 `user_outcome`；`reply_to`、发布仓库和公共地址不是录制前提。缺来源时保存准备和本地检查、说明 blocker，不盲录或泛发 bot 消息。
 
-1. **真实目标语言与范围**：用户指定的产品与语言优先。ChatCut 发布素材未指定语言时默认 English；其他产品使用其目标真实语言。用户要求原生中文界面时，必须录下真实中文控件与内容，不能用英文 UI 加中文字幕代替。每种语言独立记录 pre-flight、post-check 与来源；历史原片重剪必须标明，不能冒充新录制。语言检查核对 `ui_language` 与真实像素是否一致，不能把所有 CJK 一律判作失败。
-2. **保留/丢弃前必须做 take 核验**：每次 take 后，从原片按固定时刻抽帧（例如 GIF 窗口内每 0.5–1s，加上关键 beat），拼成 strip/contact sheet，对照分镜/预期布局，并交叉核对 timing 日志（点击时刻 vs 结果可见时刻 vs GIF 窗口 vs zoom keyframes）。丢弃须写入具体原因，常见包括：playhead 错误（例如点击前已播放导致 playhead 卡在片段末尾——选中前应点标尺等把 playhead 复位到起点）、屏幕被其他任务占用/争抢、视图滚动/错位、背景/backdrop 层缺失、UI 与时间线状态不同步、目标语言不符。**未经帧对比 + timing 核验，不得 keep 或 discard**；丢弃的 run 目录用原因命名（如 `runs/B-take2-playhead`），并向 `runs/takes.log` 追加一行（take、verdict、reason、evidence paths）。
-3. **批量筛选（选片/多样本验收通用）**：判断一组候选素材是否适合演示/发布时，不要逐条试——对各候选抽短样（片头/片中/片尾），全部放上**同一时间线**，对全体一次性施加目标变换，逐条验收并把 `verdict.json` 立即落盘后再选片。详见 [references/batch-media-screening.md](references/batch-media-screening.md)（AI Portrait Cutout 为首个实作，成功案例见 [references/worked-example-ai-portrait-cutout-v3.md](references/worked-example-ai-portrait-cutout-v3.md)；亦适用于调色/LUT、导出预设、字幕、超分等）。
-4. **抠图候选的试抠门禁**：本条仅对抠图功能及库存人像选片适用；纯产品 UI 演示记为 `not-applicable`，不为满足门禁添加无关人像。选定任何库存片之前，从候选片抽取 ≥3 张静帧（片头/片中/片尾），用演示中同一背景移除工具做试抠图（ChatCut AI Portrait Cutout 对静帧；若不可行则用可比的人像抠图模型，并注明为 proxy）。仅当主体可干净分离时才继续：无灰对灰/相近色导致主体边缘与背景粘连；无前景或手持物（箱子、衣物、话筒、脚架、道具）被误抠留下空洞或漂浮碎片；无「手持物可能被抠掉」的模糊区域——必须显式裁定何为主体，否则先裁掉这些区域。此门禁高于凌乱度/故事契合打分：高分片若试抠失败，不得作为有效演示素材。教训（2026-10-11）：Pexels 6893155 凌乱度 8.0，但胸前灰衣木箱在实抠中大多被抠掉（空洞 + 漂浮碎片），因当时仅靠肉眼判断 cutout。
+## 2. 故事与分镜：按改动规模调研
 
-   **试抠失败时的强制步骤（不可省略）**：
-   1. **立即丢弃该片**：不得录制、不得「先试试看」、不得用凌乱度/故事契合高分抵消失败。
-   2. **记为负面样例**：写入技能参考 [references/stock-footage-scoring.md](references/stock-footage-scoring.md) 的 **Negative examples** 列表（clip URL/id、试抠帧、failure mode 如 held object removed / gray-on-gray、evidence path）；同时写入本 run 的 `assets/stock/scoring/report.md` 与 `feature.json` → `clip_test_cutout`（verdict=fail、reasons、frames、tool、evidence）。
-   3. **按同一试抠优先标准搜下一候选**：循环直至有片通过；若已试满 N 条候选（默认 **N=10**）仍无通过，**停止并报告 `blocked`**，不得降低门禁、改用肉眼 cutout 评分或跳过试抠。
+按 [story-research.md](references/story-research.md) 选研究深度。`verified-reuse` 只做请求/原故事差异检查，保留原 research/story 与评分；无变化时不重做 A/B/C、外网调研或强行重选。小重剪核对素材与目标 beat；新故事才做有界参考/候选比较。用户已选故事是范围约束，无需重新选择或批准；研究可指出证据问题。
 
-5. **共享 Mac mini 全机录制锁**：本条仅适用于共用 Mac mini 屏幕、ChatCut 或 CDP 的路线；独立 Cloud / Work 浏览器不依赖该锁。共用本 Mac mini 的所有录制者（GIF 临时任务、公司卡片服务、个人 bridge、shared-recorder worker）共享一把机器级锁 + FIFO 队列（`~/Projects/chatcut-recording-lock`，CLI `~/.local/bin/chatcut-rec-lock`）。共享资源：屏幕/鼠标键盘、ChatCut 应用与默认 profile、CDP 端口 9347/9348/9350。**未持锁不得启动 ChatCut、连接 CDP 或开始录屏。**
-   - 录前查看：`chatcut-rec-lock status`（`holder` = 当前持锁者，`queue[].position` 1 = 下一个）。
-   - 录制命令一律包一层：`chatcut-rec-lock run --owner gif-job --purpose '<feature>' --ttl 2700 -- node record-xxx.mjs ...`（锁在 wrapper 进程中持有；子进程结束或崩溃即释放；退出码透传；`--wait-timeout N` 超时退出码 75）。
-   - 多步长会话（需要跨多条命令持锁）：`chatcut-rec-lock acquire --owner <me> --purpose '<feature>' --ttl 2700` … `chatcut-rec-lock release --owner <me>`；超过 ttl 自动释放。Node 内部用 `withRecordingLock()`（`lock.mjs`）。
-   - 排队行为：先到先得（FIFO）；排队时显示位置，不要抢占、不要 kill 别人的 holder 进程、不要直接删 `~/.local/share/chatcut-recording-lock/` 下的文件（死进程的票据/holder 会被自动清理）。若 `status` 显示 `ttl_expired: true` 且 holder 仍在运行，报告给用户而不是强杀。
-   - 在 `feature.json` 记录 `recording_lock`：owner、ticket、waited_s、acquired_at/released_at。
-   - 完整说明（CLI 子命令、退出码、状态目录、崩溃/陈旧清理、Node API、已接入的录制者、构建与验证记录）：[references/recording-lock.md](references/recording-lock.md)。
+- 从真实 UI 发现控件原词、可访问名称、窗口/元素矩形、滚动/弹窗/依赖及动作结果。设计 3–6 个 beat：上下文 → 核心操作 → 状态变化 → 高光结果。
+- 每 beat 写入口、鼠标路径、动作、结果、停留、取景和 marker。第一帧有可理解上下文，避免黑屏/空桌面/加载。完整 MP4 默认约 30–90 秒，但以真实证明需要为准。
+- GIF 默认连续约 8 秒，参考 1 秒上下文 + 4 秒操作 + **至少 3 秒可读结果**；按 marker 定窗口，不直接取前 8 秒。等待太长时保留完整 MP4，可选更长 GIF 或明确的后段窗口，不伪装等待或遗漏因果。
+- 请求、首响应、真实工具、任务结束、结果可读分别打 marker；不依赖固定 sleep、逐字输出或预定工具顺序。不用 replay 证明性能。声音效果用 MP4/音频，GIF 只证明可见操作。
+- 默认静态裁切。经验证的外部编辑器可做有目的的平滑镜头，但保留时间线/坐标/源映射。包内 builder **不支持动画镜头、时间压缩或定格扩展**，不得编造参数；外部加速/定格必须披露，不计作新行为/模型证据。
+- 写 `shotlist.json`，见 [shot-list-schema.md](references/shot-list-schema.md) 与 [模板](assets/shotlist.template.json)。纯 MP4 将时间明确标为其交付时间线，不伪造 GIF。
 
-在 `feature.json` 中记录：`ui_language`（真实目标语言，含 pre-flight/post-check 证据路径）、`take_verification`（每条 take 的 strip 路径、timing 交叉核对、verdict、reason）、`clip_test_cutout`（候选帧、工具、verdict、reasons、evidence paths；失败时亦须保留）。
+## 3. 条件步骤：库存素材与邮件参考
 
-## 0. Inbound delegate（其他 agent 委托录制）
+**纯产品 UI 不需要库存片或营销研究。** 仅选定故事需要库存口播/B-roll 时才搜素材，记录作者/来源/许可，不使用参考视频素材。库存搜索/批量评分、邮件抓取集成及其项目脚本**未随本包提供**，先验证环境实现，不假定额外参考文件、Resend 脚本或 Mac worker 存在。缺可选集成不阻塞无此依赖的录制。
 
-其他 agent 通过 **`delegate_to_feature_recorder/v1.1`**（仍接受 **v1**）委托本技能录制时，使用 **inbound** schema，与 §8 的 **outbound** `handoff-schema` 分开：
+- 抠图功能/库存人像选片：选前每候选抽片头/中/尾至少 3 帧，用演示同一工具试抠，替代模型标 proxy。主体/手持物被误删、空洞/碎片、相近色粘连、主体定义不清均失败。失败片不录，存本 run 负例、帧/工具/原因；继续最多 10 个候选，无通过则该依赖 `blocked`，不降门槛。
+- 多候选使用同一条件批量施加目标变换，逐项即时存 verdict 后选片。评分必须查看实际帧/contact sheet，不能按文件名猜；高分不能覆盖试抠失败。非抠图记 `clip_test_cutout=not-applicable`，不增加无关工作。
+- 任务需要对齐邮件时，使用授权只读工具读取实际 HTML、alt、宽度、链接、媒体 magic 与分页；429 按提示退避。集成缺失时记录限制，可按用户给出的尺寸交付。共用 URL 的点击不能归于 GIF，更不能声称转化因果。默认不发广播。
 
-| 方向 | 文档 | 载体 |
-|---|---|---|
-| **Inbound**（请求进来） | [references/delegate-schema.md](references/delegate-schema.md) | YAML（模板 [assets/delegate.template.yaml](assets/delegate.template.yaml)）+ SendToAgent 紧凑英文行 |
-| **Outbound**（跑完交付） | [references/handoff-schema.md](references/handoff-schema.md) | `handoff.json` + 聊天 A 消息 + bot B 消息 |
+## 4. 预演、录制与 take 核验
 
-**必填（缺一则 `blocked`，决策表回复，禁止盲录）**：`repo`、`branch`、`commit` 或 `pr`（至少一个）、`user_outcome`、`reply_to`（完成后 B-message 的 agent id）。**推荐 tip**（可省略，缺省填默认并记入 `deviations`）：`record_machine`（`box` \| `mac_mini` \| `auto`，默认 `auto`）、`publish_programs_repo`（默认 `liush2yuxjtu/feature-recorder`）。可选 tip：`entry_url`、`feature_slug`、`ui_hooks`、`demo_prompt`、`format`、`cut_policy`、`constraints`。`llm_provider` 为 **ignored/legacy**（出现也不影响选模）。v1 入站缺推荐 tip 时填默认并写入 `deviations`。完整字段见 delegate-schema。跑完后按既有 handoff 规则向 `reply_to` 发 B 消息；不改变 §8 handoff 规则（含 `funnel_checks` 硬门禁：page + gif + mp4 + handoff.json）。
+- 新录制先确认语义、控件、状态变化、取景、依赖五项通过；selector PASS 不够。模型预算在预演前确定；预演/正式 take 分开重置并保留失败，不拼接不同 take 的因果链或预填结果。
+- 检查真实 UI 语言。ChatCut 发布素材未指定时默认 English；其他产品用目标真实语言。原生中文要求必须录到中文控件/内容，不能以中文字幕替代。每语言独立录前/后证据，CJK 不一律判失败。
+- 完整原片写独立 `raw/`，不修改/覆盖/移动 GT。保留目标 channel/discovery/rehearsal 证据，以录制开始为 0 写实际 `elapsed_ms` marker，不从脚本顺序猜。结果连续可读至少 3 秒，写 `proof_interval_s`。
+- **每 take 在 keep/discard 前**：按固定时刻（GIF 窗口每 0.5–1 秒加关键 beat）抽帧做 strip，对照分镜/布局，交叉核对点击、结果可见、窗口和镜头时刻。`runs/takes.log` 写 take/verdict/具体原因/证据。未经帧与 timing 核验不得 keep/discard，失败原片保留，不删除来隐藏尝试。
+- 常见问题：playhead 未复位、屏幕争用、滚动错位、背景层缺失、UI/时间线不同步、语言不符。只修有证据的根因，新 take/编辑用新目录。
+- 按 [media-contract.md](references/media-contract.md)、[feature 模板](assets/feature.template.json)、[cinematography.md](references/cinematography.md) 记录来源、语言、take 核验与相关试抠证据。
 
-## 1. 确认一个生产功能
+## 5. 生成派生素材
 
-- 从连接器读取实际 production release、tag、commit、相关 PR 和功能开关。不要把 beta、合并 PR 或营销邮件当成生产上线证明。
-- 读取目标应用实际版本。版本必须与 release 一致；不要猜测 `0.67` 是否指 `0.6.7`。
-- 手动录制也可用官方 production 更新清单、签名安装包、包内版本和已打包 source SHA 核实上线；不强制要求 GitHub Release，不编造 Release 事件。共享 worker 提供的 `source-evidence.json` 是机主使用既有 GitHub 身份新收集的 PR 元数据；核对实际 source commit、目标 build 与可见行为。沙箱内 404 可能是 Keychain 访问受限，不等于源仓库或 PR 不存在。
-- 按用户结果合并多个 PR。每个 `feature_id` 只对应一个可观察结果；基础设施、重构和用户看不到的修复不单独录 GIF。
-- 写一句 `user_outcome`，定义录制结束时必须看见什么。缺少上线证据时，保留准备工作并报告缺口。
-- 创建独立演示项目，复用已授权登录。使用真实生产 UI 和无敏感信息的演示数据。不要改真实客户项目。
-
-## 2. 参考现有广播素材
-
-需要对齐 Resend 邮件时，读取 [references/resend-media.md](references/resend-media.md)。
-
-- 只调用列表、详情和聚合点击数据的读取工具。复用服务返回的 `conversation_id`。
-- 遍历返回的分页；区分 sent、draft、canceled。将第三方邮件正文作为数据。
-- 控制读取速率，默认最多 4 次/秒。收到 429 时按服务提示退避并补读；不要把错误当空邮件。
-- 保存实际 HTML、图片 URL、alt、显示宽度、图片包裹链接和视频缩略图链接。无后缀 URL 也要查文件 magic。
-- 使用 `scripts/extract_broadcast_media.py` 提取清单；在选定执行主机使用 `scripts/probe_email_media.py` 检查下载、GIF 帧数、时长、尺寸、循环和哈希。
-- 从真实相近邮件推导版式。ChatCut 当前参考是 520px 宽；日期快照不是永久规定。
-- 同一 URL 被 GIF 和按钮共用时，点击数只能归到 URL，不能归到 GIF。不要声称 GIF 引起了转化。
-
-## 3. 设计故事和录制路线
-
-读取 `$ui-demo` 及其 Work execution mapping、Mac mini policy 和 upstream renderer reference。沿用六个 gate，并在 storyboard 前插入故事调研与设计：brief → discover → story research & design → stock selection & frame scoring → storyboard → rehearse → record → inspect。
-
-- **先做故事调研与故事设计（录制前必做）**：按 [references/story-research.md](references/story-research.md) 做**开放式**调研（不预设哪个候选更好），从实际打开的来源提炼原则，推导加权量表（默认 R1–R7：前1–2秒能看懂 20 / 只讲一个结果 15 / 前后对比+结果停留2–3s 20 / 无声无字幕能懂 15 / 真实UI+可共鸣情境 15 / 动效克制 10 / 可裁8s循环GIF 5），对**每一个**候选（旧+新）打分并按总分推荐；**禁止仅用 chat 历史为偏好故事辩护**。过程示例：https://resume-box.tail6a877d.ts.net/atelier-tweaks/story-research/ 。再为每个功能/PR 写三个一句话故事（模板：【谁】在【场景】用【新功能】完成了【什么】：A GBA/搞笑、B 直给、C 情感），可增新候选；推荐项须带量表总分。完整 MP4 与 8s GIF 都要呈现真实成就感，不是功能走查。产出 `story/research.md` 与 `story/story.md` 后才进 storyboard。
-- 节奏和钩子参考抖音、小红书教程风格：第一秒交代问题或亮出前后对比的钩子，快速进入关键操作，把结果揭晓放在 GIF 区间内；仍保持 pure-screen 默认，不加未要求的字幕或音乐。
-- 设计 3–6 个可见 beat（由选中的故事选项映射而来，最后一个 beat 必须是故事的高光成果）：入口与已有状态 → 核心操作 → 状态变化 → 最终结果。
-- 发现实际控件、可访问名称、窗口和元素矩形、滚动位置、弹窗、依赖及动作后的结果。
-- 使用 UI 原词。每个 beat 写清入口画面、鼠标路径、动作、结果、停留、metadata 章节和取景；讲解字幕仅按用户要求添加。
-- 默认完整讲解约 30–90 秒，按任务调节；不要为了时长省略证明。
-- 默认 GIF 连续取 8 秒：约 1 秒上下文、4 秒关键操作、3 秒结果。根据原片 marker 选择实际区间，不能直接截前 8 秒。
-- 让第一帧提供可理解的上下文，避免黑屏、桌面空白或加载画面。
-- 长等待保留在 GT 和完整讲解中。需要时间压缩时，明确标出加速，并生成新的、可追溯编辑时间线；本脚本只支持原片连续区间。
-- 模型生成按可观察结果和业务断言验收，不能依赖固定 sleep、逐字文案或预定工具顺序。请求、首个响应、工具执行、任务结束与结果可读分别打 marker；live 与 replay 的实测/回放耗时分开，不把 replay 当作性能证据。
-- 声音功能用 MP4 或另附音频样本证明效果；GIF 只证明可见操作。
-
-### 平台路线
-
-- 浏览器 UI：使用 `ui-demo` 的 Playwright 发现、预演和录制流程，匹配 pinned Playwright 与 Chromium。
-- ChatCut Desktop：先发现已有原生控制、屏幕捕获或 Electron 录制路线，并验证窗口和实际版本。`ui-demo` 不提供原生控制能力；不要悄悄用 Web 页面替代 Desktop。
-- 录制、编码、frame extraction 和渲染在选定的 Cloud / Work 或 Mac mini 执行。按上方执行主机规则记录实际平台、主机、空间及依赖；Darwin 检查仅适用于 Mac mini。
-- Cloud / Work 直接使用当前执行环境。选用 Mac mini 时优先连接器，其次使用已建立的 Grokbot → Mac mini bridge；连接失败可改用允许的云端路线。不要为此新建 SSH、Tailscale 或凭据，也不要把 Grokbot 或 MacBook 当作未指定的渲染主机。
-- 缩放依据实测 ROI；默认使用 `gif.crop` 对关键区域取景。需要平滑镜头缩放时，使用已验证的编辑器并保留坐标及时间线；不要声称本 skill 自动复刻 Screen Studio 的点击追踪。
-
-## 4. 素材选择与帧评分
-
-故事设计完成后、预演/录制之前，若故事需要库存口播或 B-roll，按 [references/stock-footage-scoring.md](references/stock-footage-scoring.md) 选片并打分。免费商用素材站为 **Pexels**（https://www.pexels.com，Pexels License）与 **Pixabay**（https://pixabay.com，Pixabay Content License）；用故事场景关键词查视频搜索页，站点会拦截普通 fetch，搜索页用无头浏览器，下载走 `videos.pexels.com` 等直链。
-
-1. 按故事的场景 + 动作在 Pexels / Pixabay 搜索候选片。
-2. 下载 3–6 条到 `<project>/assets/stock/`，并写 `sources.md`（URL、作者、许可）。
-3. **试抠图门禁（硬性，先于凌乱度打分）**：从每条候选片抽 ≥3 张静帧（片头/片中/片尾），用演示同一工具（ChatCut AI Portrait Cutout 或注明的 proxy）试抠。写入 `feature.json` 的 `clip_test_cutout`。**优先用同一时间线批量筛选**（[references/batch-media-screening.md](references/batch-media-screening.md)）。详见上方「硬性规则」与 [references/stock-footage-scoring.md](references/stock-footage-scoring.md)。
-4. **试抠失败处理（硬性，编号执行）**：
-   1. 立即丢弃该片——不录制、不「先试试看」。
-   2. 记负面样例：更新 `references/stock-footage-scoring.md` 的 Negative examples；并写入本 run `assets/stock/scoring/report.md` + `feature.json` → `clip_test_cutout`（URL/id、frames、failure mode、evidence）。
-   3. 用同一试抠优先标准搜下一候选；循环直至通过。已试满默认 **N=10** 仍无通过 → 停止并报告 `blocked`，不得降低门禁。
-5. 用 ffmpeg 每 2–3 秒抽一帧（评分用；**仅对试抠通过的片**）。
-6. **用视觉模型给拼帧图打分（硬性）**：把每条候选片抽出的帧按时间顺序拼成一张 contact sheet（如 `contact_<id>.jpg`），交给视觉模型读图，按故事要求打 1–10 分并列出画面里看到的物品；分数与依据写入 `scores.csv` / `report.md`，不得凭文件名或缩略图臆测打分。
-7. 评估抠图适合度 `good` / `ok` / `poor`（主体对比、头发/边缘、前景遮挡如脚架/道具、贴边裁切、身后走动的人）——**不得替代试抠图门禁**。
-8. 仅对试抠通过的片取平均分、排序、选定最佳；记录到 `assets/stock/scoring/`（`frames/`、`scores.csv`、`report.md`、contact sheets、`test-cutout/`）。
-9. **选定后才录制。** 若最佳片与故事动作不符（例如不是在说话），必须显式决定：改故事以匹配素材，或继续搜索——不要静默凑合。
-
-## 5. 预演后录制
-
-- 确认语义、选择器、状态变化、取景和依赖五项通过。只验证选择器不算通过。
-- 依赖模型时，录前填好 `model_execution` 和次数/请求/超时预算；预演与正式 take 分开重置并关联同一业务验收条件。失败保留日志与已捕获原片，禁止隐藏重试、拼接不同 take 的因果链或在后台预填成功结果。
-- 显示鼠标移动和点击，保持文字可读。保留上下文与原生字幕内容；默认无讲解文字层。用户要求的讲解层不得遮住操作或结果。
-- 录下完整 GT，写入单独 `raw/`。不修改、替换或移动已有 GT。
-- 写 `elapsed_ms` runtime marker；将 0 秒对齐录制开始，不从脚本顺序猜章节时间。
-- 让最终结果连续可读至少 3 秒，并记录 `proof_interval_s`。
-- **Take 核验（硬性，keep/discard 前必做）**：从原片按固定时刻抽帧拼 strip/contact sheet，对照分镜，并交叉核对 timing 日志；未完成不得 keep/discard。丢弃目录用原因命名（如 `runs/B-take2-playhead`），追加 `runs/takes.log`。详见上方「硬性规则」。
-- 保留 production、discovery、rehearsal 和 marker 证据。按 [references/media-contract.md](references/media-contract.md) 填写 `assets/feature.template.json`（含 `ui_language`、`take_verification`、`clip_test_cutout`）。
-- 模型证据另按 [references/model-execution.md](references/model-execution.md) 填写；公开分发未包含的媒体脚本/模板先核实可用性，不假定存在。
-
-### 录制呈现要求
-
-按 [references/cinematography.md](references/cinematography.md) 执行，并写入 `feature.json`：
-
-- **界面语言（硬性）**：遵守上方真实目标语言规则；`feature.json` 写实际 `ui_language` 及 pre-flight/post-check 证据。未指定的 ChatCut 发布素材默认 English；其他语言使用应用自己的真实语言设置，项目与内容遵守目标演示语言。
-- **Screen Studio 式后制缩放**：起幅全局全窗；指针到达/双击时 cosine ease-in-out 约 0.6s 缩到约 1.6×（功能卡 + 片段）；处理 toast 处平移/停留约 1.75×；拉回全局并让结果停留 ≥3s。关键帧写入 `feature.json`。采集多为 1280×800，缩放后略软。
-- **时间压缩必须标注或避免**：2026-10-11 英文 GIF B 对处理等待做了未标注的 2.5× 加速以塞进 8s——之后必须画面标注（如 `2.5×`），或改用 10–11s GIF / 从点击后起算 8s 窗口。选择记入 `feature.json`。
-
-
-## 6. 生成派生素材
-
-把所需脚本与 manifest 放在选定执行主机的独立项目目录；只有跨主机时才传输，且不得传 `.env`、cookie、profile 或凭据。核实脚本支持的参数后，在该主机运行：
+在选定主机独立输出目录执行；跨主机只传必要脚本/素材，不传 `.env`、cookie/profile。按 [media-contract.md](references/media-contract.md) 设置 `feature-media/v1` manifest，先 dry-run，再去掉此参数执行：
 
 ```bash
 python3 scripts/build_feature_media.py \
   --manifest feature.json \
   --output edits/v1 \
-  --execution-route "$RECORDING_EXECUTION_ROUTE" \
-  --expected-host "$CONFIRMED_RECORDING_HOST" \
-  --format both
+  --execution-route work \
+  --expected-host '<observed-hostname>' \
+  --format both \
+  --dry-run
 ```
 
-- 用 `--dry-run` 检查计划。Cloud / Work 既可检查，也可执行实际录制、编码和抽帧。
-- 从选定执行主机的实际 preflight 设置 `CONFIRMED_RECORDING_HOST`；`RECORDING_EXECUTION_ROUTE` 为 `work` 或 `mac-mini`，须与实测平台匹配。不得冒用其他主机名。
-- `--fixture` 仅用于独立的合成编码测试；输出标为 `fixture-only`，不能用于功能演示，也不能开启 scripted 模型模式。
-- 使用 H.264 / yuv420p / faststart MP4，保留完整时长和原音频。
-- 默认 GIF 为 520px、12 FPS、无限循环、目标 ≤3 MiB。脚本使用 palettegen / paletteuse，并在超预算时尝试 10 或 8 FPS；不要静默降低文字可读性。
-- 拒绝越界剪辑、结果停留不足、越界 crop、覆盖 GT 或已有输出目录。
-- 校验原片与派生素材哈希。不要改 GT 来满足验收。
+- `source.kind=full-recording` 才能产生完整原片 MP4；已有 GIF/短派生片不能变成“完整原片”。`existing-derivative` 保持其来源声明。
+- MP4 为 H.264/yuv420p/faststart，保留完整时长/原音频。GIF 默认 520px、12 FPS、无限循环、目标 ≤3 MiB；超预算可尝试 10/8 FPS，不能牺牲文字门槛，失败则报告尺寸/时长取舍。
+- builder 拒绝越界区间/crop、阅读时间不足、覆盖 GT/已有输出；保留 SHA。输出为 `demo.mp4`、`feature.gif`、`manifest.json` 和 `input-manifest.json`，预算尝试留在 `attempts/`。
+- `--fixture` 仅独立合成编码测试，标 `fixture-only`，不能作为功能/模型证据。脚本/依赖失败属于文件流水线，不是产品 live gate。
 
-## 7. 检查真实画面
+## 6. 逐文件检查真实画面
 
-`metadata_pass` 只表示文件检查成功。它不代表视觉通过。
+按 [delivered-video-verification.md](references/delivered-video-verification.md) 对每语言、每个实际 MP4/GIF 独立验收，先固定 SHA。GIF PASS 不给完整 MP4 背书；metadata/file PASS 不给视觉或来源背书。
 
-- 从选定执行主机取得 poster、完整 contact sheet 和 GIF contact sheet；在 Work 用 `view_image` 读取并输出图像，检查实际像素。云端本机产物无需往返 Mac mini。
-- 对每次主要操作和章节边界，在同一执行主机提取更密的 frame strip；必要时播放 MP4，检查声音。
-- 检查指针到达目标后才点击、菜单能看见、结果确实变化、上下文完整、没有额外讲解层（若要求添加则用词准确）、没有遮挡或泄露、结果可读 ≥3 秒。
-- 核对 take 核验证据：固定时刻 strip、分镜对照、timing 交叉核对、`runs/takes.log`；扫描真实 UI 语言与本次语言声明一致。
-- 核对媒体 take 与模型证据、调用数及原片哈希一致；replay 额外检查逐步匹配报告、工具真实执行和所有派生片中的来源标签。声明字段或另一轮真实 API 验收本身不能证明这段素材的来源。
-- 按真实 UI 区间验证 presentation、crop 与画面。失败时，只修复有证据的问题，在新的 edits 目录重做并检查同一区间。
-- 在 `qa.json` 填写 `visual_review` 的检查人、时间、检查图片路径和结果；保留机器结果，不能自动把状态改成通过。
+- [verify_delivery.py](scripts/verify_delivery.py)：完整解码、帧/时长/编码/faststart 与匿名全片 sheet。保留 file 层结论；无产品登录也可运行。
+- [verify_playback.mjs](scripts/verify_playback.mjs)：匹配的实际 Chromium 完整 MP4 1× 播放到 `ended`，记录掉帧/错误/时钟/SHA。metadata、seek 到末尾、`play()` resolve 或解码均不算全片播放器验收。缺浏览器记 playback `blocked/not-run`，不判文件损坏。
+- 实际打开 poster、全片/密集操作帧与 GIF 交付尺寸帧；需要时播放声音。点击前标签可见、指针到达后点击且不遮字，变化真实、上下文完整、无泄露，replay 标签完整，语言声明匹配像素。
+- 每完整文件由**未参与制作的新上下文**冷读匿名 16 帧全片 sheet，不给 brief/预期答案/文件名线索，保留原文回答。视频视觉服务不可用时用解码帧/beat 静帧交独立读者，不能跳过或制作者自评 PASS。缺独立读者则 pending，不虚构。
+- `qa.json` 记录检查人/时间/SHA/图片、播放器、冷读证据。完全相同文件可沿用可读旧 receipts，保留原日期与 `basis=reused`；新编辑重跑该文件全部 gate。
 
-### 完整 MP4 与 GIF 分别复核
+### 6.1 可读性与故事清晰度（强制）
 
-每个实际交付文件、每种语言分别运行 [delivered-video-verification.md](references/delivered-video-verification.md)。必须完整解码、真实播放器原速播放到 `ended`、检查完整 MP4 抽帧及点击密集帧，再由新上下文独立冷读完整视频。GIF 的 PASS 不代表 MP4 的 PASS。复核前固定文件 SHA-256；更换成片或重新上传后刷新对应证据和所有当前 Page 链接。机器验证脚本仅给文件层结论，不得自动填视觉 PASS。
+在**实际交付尺寸**测关键文字，不在母版或 OCR 放大图测。规范见 [legibility-spec.md](references/legibility-spec.md)，脚本 [verify_legibility.py](scripts/verify_legibility.py)。
 
-可用脚本：[verify_delivery.py](scripts/verify_delivery.py)（完整解码、编码与 faststart 检查、匿名全片抽帧），[verify_playback.mjs](scripts/verify_playback.mjs)（隔离 Chromium、1×完整播放、SHA 绑定的结束回执）。最终定格可用于阅读停留，但必须记录新增时长、真实来源帧及源到成片映射，不能计作新增录制或模型运行证据。失败保留原记录，修复后重跑该文件全套检查直到通过。
+| 关键文字 | 默认指标 | 最小值 |
+|---|---|---|
+| hero / 结果标题 | Latin cap height | **16 px** |
+| 被操作控件标签 | Latin x-height | **9 px** |
+| CTA / 次要结果 | Latin x-height | **7 px** |
 
-### 7.1 可读性与故事清晰度门禁（Legibility & story clarity gate，强制）
+- 每项显式给交付像素坐标 `semantic_roi_px` / `measure_roi_px`，token 与字形测量绑定同一 ROI；严格用声明的 beat 帧，不能挑其他时刻较好结果。按真实 GIF delay 映射时间，不假设恒定 FPS；重复文字匹配不唯一时保留 FAIL。
+- OCR 安装真实语言数据。正常/反色/放大仅辅助识别，缺依赖/TSV 错误/空结果不是 PASS。Latin cap/x-height 不适用 CJK，另定有依据的整字墨迹高度并看实际笔画。保留 OCR FAIL；独立读者逐字裁定可单列视觉例外，不能改写机器 PASS。
+- 16/9/7 是本工作流默认门槛，不宣称 WCAG 像素标准。其他阈值须有依据，不能因失败临时调低。结果达标的**连续可读时间 ≥3 秒**，从镜头稳定且结果可见开始计。
+- 特写 ROI 完整，中心偏移宽/高各 ≤10%；点击时控件为主体、指针不遮标签。不够大就调整 ROI/crop/镜头、DPR、落点或交付尺寸，创建新编辑，不靠字幕/加速掩盖。
+- 冷读必须复原“可读控件 → 前后变化 → 最终结果/给谁用”，并指出不清楚处。保留 literal answer、独立性、`legibility.json`、标注 strip 与匿名 sheet；自评只能 provisional。
 
-在交付尺寸（通常 520 px GIF）上验证，不在 1920 母版上验证。任何一项失败 ⇒ 不得标 `ready`，进入修复循环。
+## 7. 本地交付与可选发布
 
-**方法**
-1. 先写 `shotlist.json`（见 `references/shot-list-schema.md`）：每个关键文字归属一个镜头和一个 beat 帧（hero 前/后、被点击的控件标签、CTA 等结果文字）。
-2. 解码交付 GIF 全部帧（`ffmpeg -vsync 0`），在每个 beat 帧上：
-   - **OCR**：tesseract 5，psm 11 + psm 6，正常 + 反色各一遍（3× 放大仅用于识别）。每个关键 token 必须识别到（模糊匹配 ≥0.8）；无法机器识别时保留 OCR FAIL，由未参与录制的读者逐字裁定并保留证据，不能把人工裁定改写为 OCR PASS。OCR 仅为辅助识别条件：3× 放大后小字也能被识别，必须同时满足像素门槛。
-   - **像素测量（交付尺寸）**：在 OCR 词框（上下各加 20% 余量）内按"与主色调差异"取墨迹行，取最长连续行段：cap height 用该词自己的首个大写字母；x-height 用只含 x-height 字母的切片（如 `SaaS` 的 `aa`、`Mood` 的 `oo`）。被叠加物拆开的词（如 `B`+`ags`）取单独大写字母。
-   - CJK 不适用 Latin cap/x-height：另记整字墨迹高度与明确阈值，查看实际笔画。OCR 必须安装对应语言数据与配置；检查 TSV 表头和错误，缺失不能当作零词通过。
-   - 参考实现：`scripts/verify_legibility.py` + `legibility_spec.json`（atelier `scripts/generative-v1/` 有同款）。
-3. **门槛（默认，按 1 GIF px = 1 CSS px、约 50 cm 观看，1 px ≈ 0.030°）**
-   | 文字 | 指标 | 最小值 | 依据 |
-   |---|---|---|---|
-   | hero / 结果标题 | cap height | **16 px** | ≈0.48° cap / 0.33° x-height，>1.5× 临界印刷尺寸 0.2°（Legge & Bigelow 2011, JoV 11(5):8）；移动端 520→340 缩放后仍 ≥0.2°；约等于 WCAG "large text"（18 pt） |
-   | 被操作的控件标签 | x-height | **9 px** | ≈0.27° > 0.2° CPS；约 18 px UI 字号，高于 Apple HIG 11 pt / Material 12 sp 最小值 |
-   | CTA / 次要结果文字 | x-height | **7 px** | ≈0.21° ≥ 0.2° CPS |
-   WCAG 本身不规定绝对像素（SC 1.4.4），所以必须在交付尺寸上实测。
-4. **结果可读时长**：结果文字达标的连续时长 ≥3 s（与第 7 节"结果可读 ≥3 秒"一致，按像素门槛计，不按 OCR 计）。
-5. **构图**：每个特写镜头 ROI 完整在画面内，ROI 中心偏移 ≤10%（宽/高）。点击瞬间控件必须是特写主体（不是宽景边缘）；指针不得遮挡被点击的标签（点击芯片右下角）。
-6. **冷启动观众测试（cold-viewer）**：只给一个视觉模型 16 帧等距 contact sheet（无字幕、无文件名、无上下文），问"发生了什么？给谁用？"。必须独立复原故事：**一个控件（名称可读）→ 改变了什么（前/后文字可读）→ 变成什么风格/结果**。由制作者自己评判不算独立，只能记为 provisional，并请父 agent 用新的上下文跑一次。**地区/模型回退**：若 `videoReview`（或其他视频视觉模型）在用户所在地区不可用，不得跳过门禁；改为解码交付 GIF 帧 + `verify/cold-viewer-contact-sheet.png`（及 beat 静帧），由**未参与录制的新上下文**按同一问题冷读。只要读者不是录制者，仍计为独立 cold-viewer。
-7. **证据文件**（提交到 `runs/<take>/verify/`）：`legibility.json`（thresholds+sources、before/after 每项实测、OCR tokens、centering、readable_result、story_test 原文回答）、`legibility-strip.png`（每个 beat 帧 + 实测值标注）、`cold-viewer-contact-sheet.png`、`mp4-ocr.json`；`shotlist.json` 中每个镜头写入 `legibility_px`。
-8. **失败 → 修复循环**：只修根因，按优先级：(a) 镜头/zoom 关键帧与 ROI 居中（`camera.py`）；(b) 每个关键文字给一个特写镜头，按 `zoom ≥ 阈值px ÷ (CSS字形px × 交付宽/1920)` 算倍数；(c) 录制 DPR 2（高倍裁剪仍锐利）；(d) 指针落点/停留；(e) 更宽 GIF 或裁剪；(f) 最后才动 App（demo zoom/字号，最小改动，先 pull）。不加速、不加字幕。新 take 或新 `edits/<vN>`，保留旧 run，追加 `runs/takes.log`，重跑同一套验证直到通过。
+每 run 写 [handoff.json](references/handoff-schema.md)，用 [模板](assets/handoff.template.json) 填实际事实，pending/null 不是通过。附所需 MP4/GIF、poster、manifest、shot list、QA、可分享来源摘要及原片位置；保留 GT/失败历史。私有 receipts 留授权归档，公开仓库只放脱敏摘要。
 
-## 8. 准备交付
+- **local（默认）**：存持久工作区，实际读取/校验最终字节，给可点击文件链接与 QA/来源说明。不需要 HTTP、功能分支、commit、PR 或公共页面。
+- **private**：用已核实的指定私有目标，读取/下载验证所需权限及上传后哈希。无公开链接完全有效，不改分享权限。访问无法验证时仍交本地包并将私有上传 gate 标阻塞。
+- **public（仅明确请求）**：完成授权的具体目的地，匿名 GET 核对所发必需 URL、HTTP 200、MIME、非空内容与精确哈希。只发请求格式；请求含 gallery/handoff 页面才验这些页面。发布失败单列 `publication=blocked`，不把本地 QA 改成 FAIL，但整体请求未完成。
+- 需要邮件嵌入才生成 `email-block.html`，使用已验证匿名可读 HTTPS 地址；local/private 文件不能伪装公网可嵌入。真实客户端邮件打开验收与只读 HTML/媒体探测分别报告。
+- 未请求发信/付款/改权限/广播时停在素材交付，不主动索取额外批准。只在用户明确授权或明确调用的授权工作流内向其他 agent 发消息；否则给可转发文本，不默认调用 bot。
+- 用户回复从 handoff 渲染：状态、一个结果、产物链接/内联 GIF、来源/各 QA 层、偏差/阻塞、下一步。复用明确历史原片/本次编辑与未执行 live gate；完整评分/shot list 放文件，按需展示。
 
-- 交付 `demo.mp4`、`feature-8s.gif`、poster、chapters、manifest、QA 和邮件片段，按请求选择格式。
-- 保存产物到用户指定、已核实的 Drive 目录；未指定时使用当前持久文件保存流程。查明 folder ID 和权限，不从历史记忆猜目录，也不改分享权限。
-- 建议结构：`ChatCut/Releases/<production-tag>/<feature-id>/{raw,edits,evidence}`。保留所有已指定为 GT 的原视频。
-- 把 GIF 或 poster 链接到完整视频或功能入口；使用可区分的 `utm_content=<feature-id>-gif` / `-cta`，让后续点击可归到对应入口。
-- 将 `email-block.html` 的占位符替换为已验证的实际 HTTPS 地址，并验证匿名 GET、MIME、非空内容、尺寸和发布后哈希。不要把登录页、预览受保护 URL 或未知链接交付成可用素材。
-- 不把发信、付款、改权限或凭据包含在素材生成授权中。当前请求未包含这些动作时，停在素材和草稿交付；不要主动发出审批请求。
-- 汇报一个功能的用户结果、来源、产物、文件检查、视觉检查、访问检查及实际阻塞。不要称只读抽帧为真实客户端邮箱验收。
+## 验收与状态
 
-### 交付输出 schema（强制）
+`ready` 要求所请求 channel/model 来源可核实；语言/范围一致；take/原片 SHA 可追溯；每文件 file、实际播放器（MP4）、像素/可读性、≥3 秒阅读与独立冷读通过；持久保存/所选目标访问通过。适用试抠须通过。复用保留原 receipt，不写成 fresh；非生产目标的 ready 不是生产部署证明。
 
-> Inbound 委托字段见上方 §0 / `references/delegate-schema.md`；本节仅约束 **outbound** handoff。
-
-详见 `references/handoff-schema.md`，模板 `assets/handoff.template.json`。
-
-- **C3 单一事实源**：每次 run 必须写 `runs/<take>/handoff.json`（字段：`status, user_story, funnel_url, funnel_checks[{url,status}], gif, mp4, poster, commit, branch, pr, story_scores[], winner, qa{verdict,hold_s,cjk_frames,notes}, deviations[], artifacts[], known_weaknesses[], issues_for{agent_id:[...]}, next`），提交到功能分支（不是 main），并发布到 funnel；下面两条消息都只能从它渲染，不得另写内容。
-- **给用户的聊天消息**（中文叙述，代码/路径用英文），严格按顺序：A1 状态（`ready` | `ready-with-notes` | `blocked`）→ A2 用户故事「【谁】在【场景】用【功能】完成了【什么】」→ A3 Funnel 链接（已验证 HTTP 200）→ A4 内联 GIF 附件 → A5 故事评分表（每个候选 R1–R7 + 总分，标出胜者）→ A7 QA 结论（pass/notes、结果停留秒数、CJK 检查）→ A8 与请求的偏差 → A10 下一步（一句话；多个选项时用决策表）。A6 产物清单与 A9 已知弱点不放进聊天消息，只写在 `handoff.json`。
-- **给 bot 的消息**（SendToAgent）：B1 固定英文行 `STATUS / RESULT / FUNNEL / COMMIT / ARTIFACTS / QA / ISSUES_FOR_YOU / NEXT` → B2 同字段的 fenced JSON 块 → B3 `handoff.json` 路径及其 funnel URL。
-- **镜头分镜**：`handoff.json` 必须含 `shot_list[]`（字段见 `references/shot-list-schema.md`，模板 `assets/shotlist.template.json`）；聊天消息在 A5 故事评分表之后紧跟一张紧凑的 **A6s 镜头分镜表**；bot 消息 B1 增加 `SHOTS:` 行，B2 JSON 含 `shot_list`。
-- 缺任何必填字段、`funnel_checks` 未覆盖 page + gif + mp4 + handoff.json（各 200），或 funnel 未验证 200 时，不得标 `ready`。
-- 依赖模型时必须交付 `model_execution` 摘要与可共享的脱敏来源证据；A7 QA 和 B1 `MODEL:` 行明确 `live` / `captured-replay`、当前 live E2E 状态与原始 live 来源。replay 可以通过素材 QA，但不能使当前 live E2E 变为 pass。
-
-## 验收清单（Acceptance checklist）
-
-在标 `ready` 前逐项确认：
-
-- [ ] `ui_language` 与用户指定目标语言及真实画面一致；每种语言均有录前和录后证据，原生中文要求没有被字幕替代。
-- [ ] `delivered_video_verification`：每个语言的 MP4 与 GIF 单独验收；完整解码、MP4 原速播放到 ended、全片独立冷读、关键文字、结果连续阅读时间和发布字节哈希均有 SHA 绑定记录。失败修复到新版本，旧记录保留。
-- [ ] `take_verification`：每条 take 均有固定时刻抽帧 strip/contact sheet + 分镜对照 + timing 日志交叉核对；keep/discard 均有 verdict 与具体 reason；丢弃目录按原因命名，`runs/takes.log` 已追加。
-- [ ] `clip_test_cutout`：纯产品 UI 或非抠图任务明确记为 `not-applicable`；适用时在选片前对候选片 ≥3 静帧（片头/片中/片尾）用演示同一抠图工具试抠并通过；失败片已立即丢弃（未录制）；已记入 Negative examples + 本 run `report.md`/`feature.json`；按同一标准循环搜下一片；满 N=10 仍无通过则 `blocked`（未降门禁）。
-- [ ] `legibility_gate`（§7.1）：交付尺寸 GIF 上 hero cap ≥16 px、被操作控件标签 x-height ≥9 px、CTA x-height ≥7 px（或在 `legibility.json` 里给出有来源的其他门槛）；每个 beat 帧 OCR 识别关键 token，或保留机器 FAIL 与独立逐字视觉裁定记录；结果文字达标 ≥3 s；特写 ROI 完整且居中（≤10%）；冷启动观众测试独立复原"一个控件→改了什么→什么风格"（自评只算 provisional）；证据 `verify/legibility.json` + `verify/legibility-strip.png` + contact sheet 已提交。失败已按修复循环重做并记入 `runs/takes.log`。
-- [ ] `shot_list`：`runs/<take>/shotlist.json` 与 `handoff.json.shot_list[]` 一致，字段完整（id、t_start/t_end、beat、framing、zoom、roi、focus、pointer、text_expected、legibility_px、transition/ease、hold_s、purpose）；聊天消息含 A6s 镜头分镜表。
-- [ ] 模型依赖素材仅用 `live` 或 `captured-replay`；无 scripted/mock/预填输出。`model_execution` 绑定本 take 与原片哈希，预算和失败记录完整；replay 来源 live 验收通过、每步匹配/真实工具执行通过、标签在最终 MP4/GIF 可读，当前 live E2E 仍为 `not-run`。无模型操作有真实原因，历史 fixture 仅审计保留。
-- [ ] 生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过（见下方输出状态）。
-
-## 输出状态
-
-- `ready`：生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过；且目标语言、`take_verification`、逐文件完整视频复核及适用的 `clip_test_cutout` 规则均满足。
-- `needs-visual-review`：编码与文件检查通过，画面尚未验证。
-- `blocked`：生产来源、录制路线、窗口权限、登录、空间、依赖阻塞，或模型来源/调用/replay 匹配/来源标记、目标语言 / take 核验 / 适用的试抠图 / 完整视频复核 / 可读性门禁未通过；交付已完成的准备工作与真实错误。
-- `fixture-only`：独立的合成编码测试或历史审计素材；禁止用于功能演示、生产或发送验收，不提供 scripted 模型录制路线。
-
-## 队友共用 Mac mini
-
-需要共用 Mac mini 时，先读取仓库根目录的 `docs/shared-macmini-recorder.md`，使用 `scripts/request_shared_recording.py` 和已有 GitHub 身份提交明确的手动录制任务。Mac mini worker 按本技能与已有 /ui-demo 执行；请求方查询同一 issue、下载校验后的素材或取消。任务访问码不进入仓库，不分享机主凭据。连接验证和 fixture 不能代替本技能的真实版本与画面验收。
+- `ready`：适用必需 gate 通过，请求交付完成。未请求 publication/fresh live 时明确 `not-requested/not-run`，不算失败。
+- `ready-with-notes`：同样通过必需 gate，只有非阻断说明（如历史素材复用）；notes 不能绕过来源/阅读/独立复核或请求的发布失败。
+- `needs-visual-review`：文件检查通过，画面/独立阅读未完成，不是成片 ready。
+- `blocked`：来源、所需录制/模型/访问或必需 gate 失败/缺失。交付已完成文件和分层证据，说明具体缺口。
+- `fixture-only`：独立合成编码测试/历史审计素材，不能作为功能/生产/发送验收。

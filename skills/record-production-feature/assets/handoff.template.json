@@ -1,115 +1,157 @@
 {
-  "status": "ready | ready-with-notes | blocked",
-  "user_story": "【谁】在【场景】用【功能】完成了【什么】",
-  "funnel_url": "https://<host>/<gallery>/<feature>/",
-  "funnel_checks": [
-    {
-      "url": "https://<host>/<gallery>/<feature>/",
-      "status": 200
-    },
-    {
-      "url": "https://<host>/<gallery>/<feature>/<feature>.gif",
-      "status": 200
-    },
-    {
-      "url": "https://<host>/<gallery>/<feature>/<feature>.mp4",
-      "status": 200
-    },
-    {
-      "url": "https://<host>/<gallery>/<feature>/handoff.json",
-      "status": 200
-    }
-  ],
-  "gif": "https://<host>/<gallery>/<feature>/<feature>.gif",
-  "mp4": "https://<host>/<gallery>/<feature>/<feature>.mp4",
-  "poster": "https://<host>/<gallery>/<feature>/poster.png",
-  "commit": "<40-char sha>",
-  "branch": "feat/<branch>",
-  "pr": "https://github.com/<owner>/<repo>/pull/<n>",
-  "story_scores": [
-    {
-      "candidate": "<id>",
-      "R1": null,
-      "R2": null,
-      "R3": null,
-      "R4": null,
-      "R5": null,
-      "R6": null,
-      "R7": null,
-      "total": 0
-    }
-  ],
-  "winner": "<candidate id>",
-  "shot_list": [
-    {
-      "id": "S1",
-      "t_start": 0.0,
-      "t_end": 0.5,
-      "beat": "B0 establish",
-      "framing": "full",
-      "zoom": 1.0,
-      "crop_css": [
-        0,
-        0,
-        1920,
-        1080
-      ],
-      "roi_css": [
-        0,
-        0,
-        1920,
-        1080
-      ],
-      "focus": "<UI label>",
-      "pointer": "idle",
-      "text_expected": [],
-      "legibility_px": null,
-      "transition_in": "cut",
-      "ease": "cosine, log-zoom",
-      "hold_s": 0.5,
-      "purpose": "<why>"
-    }
-  ],
-  "legibility": {
-    "verdict": "pass | fail",
-    "file": "docs/media/runs/<take>/verify/legibility.json",
-    "checks": [
-      {
-        "id": "hero_after",
-        "metric": "cap_height",
-        "measured_px": 0,
-        "threshold_px": 16,
-        "ocr": true,
-        "pass": false
-      }
+  "schema": "feature-handoff/v2",
+  "status": "blocked",
+  "user_story": "<one visible user outcome>",
+  "workflow": {
+    "lane": null,
+    "source_run_id": null,
+    "change_summary": "<actual requested change or unchanged decision>",
+    "reused_evidence": []
+  },
+  "delivery": {
+    "target": "local",
+    "requested_formats": [
+      "gif",
+      "mp4"
     ],
-    "readable_result_s": 0,
-    "centering_pass": false,
+    "root": null,
+    "persistence": "not-verified",
+    "access_evidence": []
+  },
+  "source": {
+    "product": null,
+    "version": null,
+    "channel": "production",
+    "surface": null,
+    "commit": null,
+    "branch": null,
+    "pr": null,
+    "evidence": [],
+    "raw": []
+  },
+  "gates": {
+    "production_source": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "model_source": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "current_environment": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "current_live_e2e": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "file": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "playback": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "visual": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "legibility": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "cold_reader": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    },
+    "delivery_access": {
+      "status": "not-run",
+      "basis": "none",
+      "required": null,
+      "evidence": [],
+      "reason": "Not evaluated; fill from actual evidence."
+    }
+  },
+  "gif": null,
+  "mp4": null,
+  "poster": null,
+  "artifact_checks": [],
+  "publication": {
+    "requested": false,
+    "status": "not-requested",
+    "destination": null,
+    "requested_roles": [],
+    "evidence": []
+  },
+  "funnel_url": null,
+  "funnel_checks": [],
+  "commit": null,
+  "branch": null,
+  "pr": null,
+  "research_mode": null,
+  "story_scores": [],
+  "winner": null,
+  "shot_list": [],
+  "legibility": {
+    "verdict": "pending",
+    "file": null,
+    "checks": [],
+    "readable_result_s": null,
+    "centering_pass": null,
     "story_test": {
       "independent": false,
-      "pass": false,
-      "answer": ""
+      "pass": null,
+      "answer": null,
+      "evidence": null
     }
   },
   "qa": {
-    "verdict": "pass | pass-with-notes | fail",
-    "hold_s": 0,
-    "cjk_frames": 0,
-    "notes": ""
+    "verdict": "pending",
+    "hold_s": null,
+    "ui_language": null,
+    "notes": "Template only; no source, file, player, visual or access gate executed."
   },
-  "model_execution": {
-    "mode": "live",
-    "run_id": "<current-take>",
-    "evidence": "evidence/model-execution.json",
-    "current_live_e2e": "not-run",
-    "source_live_e2e": null,
-    "disclosure": "Live model"
-  },
+  "model_execution": null,
+  "no_inference_reason": null,
   "deviations": [],
   "artifacts": [],
   "known_weaknesses": [],
-  "issues_for": {
-    "<agent_id>": []
-  },
-  "next": ""
+  "issues_for": {},
+  "next": "Complete bounded source/access/package preflight and fill only observed facts.",
+  "_template_notes": [
+    "Null model_execution is pending until observed no-inference behavior is established; it is not a provenance bypass.",
+    "For model media fill mode live/captured-replay, operation fresh-recording/reuse/re-edit/replay-recording, current edit run_id, source_run_id, evidence, current_live_e2e, source_live_e2e and disclosure.",
+    "Historical reuse/re-edit keeps current_live_e2e not-run and original verified live evidence separately; never infer source pass.",
+    "Add each delivered file with SHA-bound per-layer checks; unchanged reused checks retain original receipt, date and reviewer.",
+    "No public URLs, repository commit or agent message are required for local/private delivery; requested publication must be completed and checked."
+  ]
 }

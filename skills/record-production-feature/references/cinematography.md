@@ -1,0 +1,13 @@
+# Framing real feature recordings
+
+Choose the smallest continuous story that proves one user result. Record the real target language, enough initial context to understand the action, the actual state change and at least three continuous readable seconds of the result. Mark observed times while recording; do not derive them from script order or add fake runtime events after the take.
+
+At the intended delivery size, frame the clicked control and resulting content as complete objects. Measure the important text in delivered pixels, keep the pointer off the label and preserve the meaningful before state. A wide recording does not guarantee a 520 px GIF is readable. Prefer setting up the real product viewport and a static crop before recording; use an explicitly requested wider GIF when that preserves the story and passes its actual delivery budget.
+
+The bundled [builder](../scripts/build_feature_media.py) applies static `crop_px` and scale separately for MP4/GIF. It does not implement animated Screen Studio cameras, keyframes, pans, time compression, synthetic pointers, captions, model progress or final-frame holds. Record a closer take or use a separately documented editor if a continuous static shot cannot work. Never claim metadata keyframes were rendered when the chosen encoder did not implement them.
+
+Preserve native product text and required provenance. For captured replay, the native `Recorded model response · real tools` label must stay within every derivative's crop and remain readable throughout relevant intervals. Include its observed source rectangle in `feature.json`; then inspect actual delivered pixels. A declared rectangle and a successfully applied crop do not prove that the source label was real or readable.
+
+Keep slow processing in the immutable full recording. Select a genuine continuous GIF interval that includes the result proof; do not make an 8-second duration imply an 8-second model run. If the intended result cannot fit with sufficient reading time, choose a longer preview or re-record the real interaction. Any separately configured editorial hold must repeat a real frame, disclose its duration and source frame, and remain separate from observed source evidence; this package's encoder adds no holds.
+
+After every take and repair, compare sampled source frames with the shot list and real timing evidence. Save the failed version before fixing the root cause. Verify each delivered artifact independently at its final dimensions; file checks do not establish legibility or narrative success. See [media-contract.md](media-contract.md) and [delivered-video-verification.md](delivered-video-verification.md).

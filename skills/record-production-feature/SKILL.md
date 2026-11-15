@@ -26,12 +26,12 @@ description: Turn one verified production feature into one focused GIF or video.
 
 ## 硬性规则 / Hard rules
 
-以下五条在任何录制流程中不可跳过；与下文章节冲突时以本块为准。
+以下规则在其适用范围内不可跳过；与下文章节冲突时以本块为准。
 
-1. **英文 UI 强制（每次录制）**：任何录制前必须把应用语言设为 English（ChatCut：头像 → Language → English；`--lang=en` 在 0.6.9 无效）。禁止用中文 UI 录制；项目名、时间线名、素材名也一律用英文。**Pre-flight**：录前通过应用设置或可见英文 UI 文案（如 `Library`、`Effects`、`Export`）用截图/DOM 确认语言；非英文则中止。**Post-check**：扫描 GIF 帧是否出现 CJK UI 文字；若有则整条 take 作废。
-2. **保留/丢弃前必须做 take 核验**：每次 take 后，从原片按固定时刻抽帧（例如 GIF 窗口内每 0.5–1s，加上关键 beat），拼成 strip/contact sheet，对照分镜/预期布局，并交叉核对 timing 日志（点击时刻 vs 结果可见时刻 vs GIF 窗口 vs zoom keyframes）。丢弃须写入具体原因，常见包括：playhead 错误（例如点击前已播放导致 playhead 卡在片段末尾——选中前应点标尺等把 playhead 复位到起点）、屏幕被其他任务占用/争抢、视图滚动/错位、背景/backdrop 层缺失、UI 与时间线状态不同步、中文 UI。**未经帧对比 + timing 核验，不得 keep 或 discard**；丢弃的 run 目录用原因命名（如 `runs/B-take2-playhead`），并向 `runs/takes.log` 追加一行（take、verdict、reason、evidence paths）。
+1. **真实目标语言与范围**：用户指定的产品与语言优先。ChatCut 发布素材未指定语言时默认 English；其他产品使用其目标真实语言。用户要求原生中文界面时，必须录下真实中文控件与内容，不能用英文 UI 加中文字幕代替。每种语言独立记录 pre-flight、post-check 与来源；历史原片重剪必须标明，不能冒充新录制。语言检查核对 `ui_language` 与真实像素是否一致，不能把所有 CJK 一律判作失败。
+2. **保留/丢弃前必须做 take 核验**：每次 take 后，从原片按固定时刻抽帧（例如 GIF 窗口内每 0.5–1s，加上关键 beat），拼成 strip/contact sheet，对照分镜/预期布局，并交叉核对 timing 日志（点击时刻 vs 结果可见时刻 vs GIF 窗口 vs zoom keyframes）。丢弃须写入具体原因，常见包括：playhead 错误（例如点击前已播放导致 playhead 卡在片段末尾——选中前应点标尺等把 playhead 复位到起点）、屏幕被其他任务占用/争抢、视图滚动/错位、背景/backdrop 层缺失、UI 与时间线状态不同步、目标语言不符。**未经帧对比 + timing 核验，不得 keep 或 discard**；丢弃的 run 目录用原因命名（如 `runs/B-take2-playhead`），并向 `runs/takes.log` 追加一行（take、verdict、reason、evidence paths）。
 3. **批量筛选（选片/多样本验收通用）**：判断一组候选素材是否适合演示/发布时，不要逐条试——对各候选抽短样（片头/片中/片尾），全部放上**同一时间线**，对全体一次性施加目标变换，逐条验收并把 `verdict.json` 立即落盘后再选片。详见 [references/batch-media-screening.md](references/batch-media-screening.md)（AI Portrait Cutout 为首个实作，成功案例见 [references/worked-example-ai-portrait-cutout-v3.md](references/worked-example-ai-portrait-cutout-v3.md)；亦适用于调色/LUT、导出预设、字幕、超分等）。
-4. **素材必须先通过试抠图（选片前强制门禁）**：选定任何库存片之前，从候选片抽取 ≥3 张静帧（片头/片中/片尾），用演示中同一背景移除工具做试抠图（ChatCut AI Portrait Cutout 对静帧；若不可行则用可比的人像抠图模型，并注明为 proxy）。仅当主体可干净分离时才继续：无灰对灰/相近色导致主体边缘与背景粘连；无前景或手持物（箱子、衣物、话筒、脚架、道具）被误抠留下空洞或漂浮碎片；无「手持物可能被抠掉」的模糊区域——必须显式裁定何为主体，否则先裁掉这些区域。此门禁高于凌乱度/故事契合打分：高分片若试抠失败，不得作为有效演示素材。教训（2026-10-11）：Pexels 6893155 凌乱度 8.0，但胸前灰衣木箱在实抠中大多被抠掉（空洞 + 漂浮碎片），因当时仅靠肉眼判断 cutout。
+4. **抠图候选的试抠门禁**：本条仅对抠图功能及库存人像选片适用；纯产品 UI 演示记为 `not-applicable`，不为满足门禁添加无关人像。选定任何库存片之前，从候选片抽取 ≥3 张静帧（片头/片中/片尾），用演示中同一背景移除工具做试抠图（ChatCut AI Portrait Cutout 对静帧；若不可行则用可比的人像抠图模型，并注明为 proxy）。仅当主体可干净分离时才继续：无灰对灰/相近色导致主体边缘与背景粘连；无前景或手持物（箱子、衣物、话筒、脚架、道具）被误抠留下空洞或漂浮碎片；无「手持物可能被抠掉」的模糊区域——必须显式裁定何为主体，否则先裁掉这些区域。此门禁高于凌乱度/故事契合打分：高分片若试抠失败，不得作为有效演示素材。教训（2026-10-11）：Pexels 6893155 凌乱度 8.0，但胸前灰衣木箱在实抠中大多被抠掉（空洞 + 漂浮碎片），因当时仅靠肉眼判断 cutout。
 
    **试抠失败时的强制步骤（不可省略）**：
    1. **立即丢弃该片**：不得录制、不得「先试试看」、不得用凌乱度/故事契合高分抵消失败。
@@ -167,9 +167,15 @@ python3 scripts/build_feature_media.py \
 - 从选定执行主机取得 poster、完整 contact sheet 和 GIF contact sheet；在 Work 用 `view_image` 读取并输出图像，检查实际像素。云端本机产物无需往返 Mac mini。
 - 对每次主要操作和章节边界，在同一执行主机提取更密的 frame strip；必要时播放 MP4，检查声音。
 - 检查指针到达目标后才点击、菜单能看见、结果确实变化、上下文完整、没有额外讲解层（若要求添加则用词准确）、没有遮挡或泄露、结果可读 ≥3 秒。
-- 核对 take 核验证据：固定时刻 strip、分镜对照、timing 交叉核对、`runs/takes.log`；扫描帧中无中文 UI。
+- 核对 take 核验证据：固定时刻 strip、分镜对照、timing 交叉核对、`runs/takes.log`；扫描真实 UI 语言与本次语言声明一致。
 - 按真实 UI 区间验证 presentation、crop 与画面。失败时，只修复有证据的问题，在新的 edits 目录重做并检查同一区间。
 - 在 `qa.json` 填写 `visual_review` 的检查人、时间、检查图片路径和结果；保留机器结果，不能自动把状态改成通过。
+
+### 完整 MP4 与 GIF 分别复核
+
+每个实际交付文件、每种语言分别运行 [delivered-video-verification.md](references/delivered-video-verification.md)。必须完整解码、真实播放器原速播放到 `ended`、检查完整 MP4 抽帧及点击密集帧，再由新上下文独立冷读完整视频。GIF 的 PASS 不代表 MP4 的 PASS。复核前固定文件 SHA-256；更换成片或重新上传后刷新对应证据和所有当前 Page 链接。机器验证脚本仅给文件层结论，不得自动填视觉 PASS。
+
+可用脚本：[verify_delivery.py](scripts/verify_delivery.py)（完整解码、编码与 faststart 检查、匿名全片抽帧），[verify_playback.mjs](scripts/verify_playback.mjs)（隔离 Chromium、1×完整播放、SHA 绑定的结束回执）。最终定格可用于阅读停留，但必须记录新增时长、真实来源帧及源到成片映射，不能计作新增录制或模型运行证据。失败保留原记录，修复后重跑该文件全套检查直到通过。
 
 ### 7.1 可读性与故事清晰度门禁（Legibility & story clarity gate，强制）
 
@@ -178,8 +184,9 @@ python3 scripts/build_feature_media.py \
 **方法**
 1. 先写 `shotlist.json`（见 `references/shot-list-schema.md`）：每个关键文字归属一个镜头和一个 beat 帧（hero 前/后、被点击的控件标签、CTA 等结果文字）。
 2. 解码交付 GIF 全部帧（`ffmpeg -vsync 0`），在每个 beat 帧上：
-   - **OCR**：tesseract 5，psm 11 + psm 6，正常 + 反色各一遍（3× 放大仅用于识别）。每个关键 token 必须识别到（模糊匹配 ≥0.8）。OCR 只是必要条件：3× 放大后小字也能被识别，必须同时满足像素门槛。
+   - **OCR**：tesseract 5，psm 11 + psm 6，正常 + 反色各一遍（3× 放大仅用于识别）。每个关键 token 必须识别到（模糊匹配 ≥0.8）；无法机器识别时保留 OCR FAIL，由未参与录制的读者逐字裁定并保留证据，不能把人工裁定改写为 OCR PASS。OCR 仅为辅助识别条件：3× 放大后小字也能被识别，必须同时满足像素门槛。
    - **像素测量（交付尺寸）**：在 OCR 词框（上下各加 20% 余量）内按"与主色调差异"取墨迹行，取最长连续行段：cap height 用该词自己的首个大写字母；x-height 用只含 x-height 字母的切片（如 `SaaS` 的 `aa`、`Mood` 的 `oo`）。被叠加物拆开的词（如 `B`+`ags`）取单独大写字母。
+   - CJK 不适用 Latin cap/x-height：另记整字墨迹高度与明确阈值，查看实际笔画。OCR 必须安装对应语言数据与配置；检查 TSV 表头和错误，缺失不能当作零词通过。
    - 参考实现：`scripts/verify_legibility.py` + `legibility_spec.json`（atelier `scripts/generative-v1/` 有同款）。
 3. **门槛（默认，按 1 GIF px = 1 CSS px、约 50 cm 观看，1 px ≈ 0.030°）**
    | 文字 | 指标 | 最小值 | 依据 |
@@ -220,7 +227,8 @@ python3 scripts/build_feature_media.py \
 
 在标 `ready` 前逐项确认：
 
-- [ ] `ui_language` 为 `en`：录前 pre-flight（设置或可见英文 UI 文案截图/DOM）通过；GIF 帧 post-check 无 CJK UI 文字；项目/时间线/素材名为英文。
+- [ ] `ui_language` 与用户指定目标语言及真实画面一致；每种语言均有录前和录后证据，原生中文要求没有被字幕替代。
+- [ ] `delivered_video_verification`：每个语言的 MP4 与 GIF 单独验收；完整解码、MP4 原速播放到 ended、全片独立冷读、关键文字、结果连续阅读时间和发布字节哈希均有 SHA 绑定记录。失败修复到新版本，旧记录保留。
 - [ ] `take_verification`：每条 take 均有固定时刻抽帧 strip/contact sheet + 分镜对照 + timing 日志交叉核对；keep/discard 均有 verdict 与具体 reason；丢弃目录按原因命名，`runs/takes.log` 已追加。
 - [ ] `clip_test_cutout`：选片前对候选片 ≥3 静帧（片头/片中/片尾）用演示同一抠图工具试抠并通过；失败片已立即丢弃（未录制）；已记入 Negative examples + 本 run `report.md`/`feature.json`；按同一标准循环搜下一片；满 N=10 仍无通过则 `blocked`（未降门禁）。
 - [ ] `legibility_gate`（§7.1）：交付尺寸 GIF 上 hero cap ≥16 px、被操作控件标签 x-height ≥9 px、CTA x-height ≥7 px（或在 `legibility.json` 里给出有来源的其他门槛）；每个 beat 帧 OCR 识别全部关键 token；结果文字达标 ≥3 s；特写 ROI 完整且居中（≤10%）；冷启动观众测试独立复原"一个控件→改了什么→什么风格"（自评只算 provisional）；证据 `verify/legibility.json` + `verify/legibility-strip.png` + contact sheet 已提交。失败已按修复循环重做并记入 `runs/takes.log`。
@@ -229,9 +237,9 @@ python3 scripts/build_feature_media.py \
 
 ## 输出状态
 
-- `ready`：生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过；且 `ui_language=en`、`take_verification` 与 `clip_test_cutout` 硬性规则均满足。
+- `ready`：生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过；且目标语言、`take_verification`、逐文件完整视频复核及适用的 `clip_test_cutout` 规则均满足。
 - `needs-visual-review`：编码与文件检查通过，画面尚未验证。
-- `blocked`：生产来源、录制路线、窗口权限、登录、空间、依赖阻塞，或英文 UI / take 核验 / 试抠图 / 可读性门禁未通过；交付已完成的准备工作与真实错误。
+- `blocked`：生产来源、录制路线、窗口权限、登录、空间、依赖阻塞，或目标语言 / take 核验 / 适用的试抠图 / 完整视频复核 / 可读性门禁未通过；交付已完成的准备工作与真实错误。
 - `fixture-only`：合成测试素材，禁止用于生产或发送验收。
 
 ## 队友共用 Mac mini

@@ -46,7 +46,7 @@ description: Turn one verified production feature into one focused GIF or video.
    - 在 `feature.json` 记录 `recording_lock`：owner、ticket、waited_s、acquired_at/released_at。
    - 完整说明（CLI 子命令、退出码、状态目录、崩溃/陈旧清理、Node API、已接入的录制者、构建与验证记录）：[references/recording-lock.md](references/recording-lock.md)。
 
-在 `feature.json` 中记录：`ui_language`（必须为 `en`，含 pre-flight/post-check 证据路径）、`take_verification`（每条 take 的 strip 路径、timing 交叉核对、verdict、reason）、`clip_test_cutout`（候选帧、工具、verdict、reasons、evidence paths；失败时亦须保留）。
+在 `feature.json` 中记录：`ui_language`（真实目标语言，含 pre-flight/post-check 证据路径）、`take_verification`（每条 take 的 strip 路径、timing 交叉核对、verdict、reason）、`clip_test_cutout`（候选帧、工具、verdict、reasons、evidence paths；失败时亦须保留）。
 
 ## 0. Inbound delegate（其他 agent 委托录制）
 
@@ -134,7 +134,7 @@ description: Turn one verified production feature into one focused GIF or video.
 
 按 [references/cinematography.md](references/cinematography.md) 执行，并写入 `feature.json`：
 
-- **界面语言（硬性）**：见上方「硬性规则」——每次录制强制 English UI；`feature.json` 写 `ui_language: en` 及 pre-flight/post-check 证据。ChatCut：头像 → Language → English（`--lang=en` 在 0.6.9 无效）；项目/时间线/素材名用英文。
+- **界面语言（硬性）**：遵守上方真实目标语言规则；`feature.json` 写实际 `ui_language` 及 pre-flight/post-check 证据。未指定的 ChatCut 发布素材默认 English；其他语言使用应用自己的真实语言设置，项目与内容遵守目标演示语言。
 - **Screen Studio 式后制缩放**：起幅全局全窗；指针到达/双击时 cosine ease-in-out 约 0.6s 缩到约 1.6×（功能卡 + 片段）；处理 toast 处平移/停留约 1.75×；拉回全局并让结果停留 ≥3s。关键帧写入 `feature.json`。采集多为 1280×800，缩放后略软。
 - **时间压缩必须标注或避免**：2026-10-11 英文 GIF B 对处理等待做了未标注的 2.5× 加速以塞进 8s——之后必须画面标注（如 `2.5×`），或改用 10–11s GIF / 从点击后起算 8s 窗口。选择记入 `feature.json`。
 
@@ -230,8 +230,8 @@ python3 scripts/build_feature_media.py \
 - [ ] `ui_language` 与用户指定目标语言及真实画面一致；每种语言均有录前和录后证据，原生中文要求没有被字幕替代。
 - [ ] `delivered_video_verification`：每个语言的 MP4 与 GIF 单独验收；完整解码、MP4 原速播放到 ended、全片独立冷读、关键文字、结果连续阅读时间和发布字节哈希均有 SHA 绑定记录。失败修复到新版本，旧记录保留。
 - [ ] `take_verification`：每条 take 均有固定时刻抽帧 strip/contact sheet + 分镜对照 + timing 日志交叉核对；keep/discard 均有 verdict 与具体 reason；丢弃目录按原因命名，`runs/takes.log` 已追加。
-- [ ] `clip_test_cutout`：选片前对候选片 ≥3 静帧（片头/片中/片尾）用演示同一抠图工具试抠并通过；失败片已立即丢弃（未录制）；已记入 Negative examples + 本 run `report.md`/`feature.json`；按同一标准循环搜下一片；满 N=10 仍无通过则 `blocked`（未降门禁）。
-- [ ] `legibility_gate`（§7.1）：交付尺寸 GIF 上 hero cap ≥16 px、被操作控件标签 x-height ≥9 px、CTA x-height ≥7 px（或在 `legibility.json` 里给出有来源的其他门槛）；每个 beat 帧 OCR 识别全部关键 token；结果文字达标 ≥3 s；特写 ROI 完整且居中（≤10%）；冷启动观众测试独立复原"一个控件→改了什么→什么风格"（自评只算 provisional）；证据 `verify/legibility.json` + `verify/legibility-strip.png` + contact sheet 已提交。失败已按修复循环重做并记入 `runs/takes.log`。
+- [ ] `clip_test_cutout`：纯产品 UI 或非抠图任务明确记为 `not-applicable`；适用时在选片前对候选片 ≥3 静帧（片头/片中/片尾）用演示同一抠图工具试抠并通过；失败片已立即丢弃（未录制）；已记入 Negative examples + 本 run `report.md`/`feature.json`；按同一标准循环搜下一片；满 N=10 仍无通过则 `blocked`（未降门禁）。
+- [ ] `legibility_gate`（§7.1）：交付尺寸 GIF 上 hero cap ≥16 px、被操作控件标签 x-height ≥9 px、CTA x-height ≥7 px（或在 `legibility.json` 里给出有来源的其他门槛）；每个 beat 帧 OCR 识别关键 token，或保留机器 FAIL 与独立逐字视觉裁定记录；结果文字达标 ≥3 s；特写 ROI 完整且居中（≤10%）；冷启动观众测试独立复原"一个控件→改了什么→什么风格"（自评只算 provisional）；证据 `verify/legibility.json` + `verify/legibility-strip.png` + contact sheet 已提交。失败已按修复循环重做并记入 `runs/takes.log`。
 - [ ] `shot_list`：`runs/<take>/shotlist.json` 与 `handoff.json.shot_list[]` 一致，字段完整（id、t_start/t_end、beat、framing、zoom、roi、focus、pointer、text_expected、legibility_px、transition/ease、hold_s、purpose）；聊天消息含 A6s 镜头分镜表。
 - [ ] 生产证据、文件检查、视觉检查、持久保存和目标访问检查均通过（见下方输出状态）。
 

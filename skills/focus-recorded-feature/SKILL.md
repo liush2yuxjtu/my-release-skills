@@ -15,6 +15,7 @@ Status: IMPLEMENTED。复用完整 GT，生成聚焦 MP4 和 8 秒 GIF。支持�
 - 先读仓库 `AGENTS.md`、`config/release-policy.json` 和 `config/skills.json`。不要通过模板的 mode 启用占位 pipeline。
 - 核实每条 GT 的实际文件、完整 SHA-256、尺寸、FPS、帧数、来源 Release tag/commit/channel 和已有 scope。版本字符串或已合并 PR 不证明功能上线。
 - 保留 `operation`、`view`、`entry` 或 `partial` 范围。入口演示不能改写成端到端成功；旧版本 GT 不能证明新版本功能。
+- 模型依赖 GT 先核查 [模型来源契约](../record-production-feature/references/model-execution.md)：仅接受 live 或有原始真实来源与严格匹配证据的 captured-replay，scripted/mock/预填输出素材只留历史审计。沿用原模型 run 与 raw 哈希，重剪不产生新调用；replay 的可见来源标签加入 `required_regions`，所有 crop/zoom/GIF 都保留，当前 live E2E 仍为 not-run。
 - 若没有合适原片，先调用现有 `$ui-demo`，在 Mac mini 按 brief → discover → storyboard → rehearse → record → inspect 录完整 GT。Desktop 必须使用已验证的原生/Electron 路线；不要用 Web 替代。不要覆盖已有技能。
 - 原片只读。新录制与已有 GT 分开保存；不得用聚焦片、GIF 或冻结画面替换 GT。
 

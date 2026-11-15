@@ -51,6 +51,11 @@ block solely because they are absent:
 | `format` | `gif` \| `mp4` \| `both` (skill default: both) |
 | `cut_policy` | GIF window / hold hints |
 | `constraints` | Hard limits (no zoom, fixed crop, etc.) |
+| `model_mode` | `live` (default) or `captured-replay`; scripted/mock model modes are invalid, including PR demos |
+| `replay_source` | Original successful live run and evidence/capture references; required before executing captured replay, verified under [the replay playbook](../playbooks/captured-model-replay.md) |
+| `model_budget` | Take/request/timeout limits and observable cost cap; recorder fills bounded values before live execution when absent |
+
+Omitting these tips does not add an approval gate: default to live and determine a bounded plan within existing authorization. An explicitly invalid model mode, missing replay source or mismatched capture blocks the dependent recording; never silently ignore it or fall back to scripted responses. Apply [model execution evidence](model-execution.md) to both v1 and v1.1 delegates; capture availability is not proof that a project's replay adapter exists.
 
 ### Ignored / legacy tips
 
@@ -99,6 +104,9 @@ publish_programs_repo: liush2yuxjtu/feature-recorder
 # format: both
 # cut_policy:
 # constraints: []
+# model_mode: live            # live | captured-replay; scripted prohibited
+# replay_source:             # verified live source for captured-replay
+# model_budget:              # bounded take/request/timeout limits
 # llm_provider:   # ignored / legacy — do not send
 ```
 

@@ -97,6 +97,14 @@
     "cjk_frames": 0,
     "notes": ""
   },
+  "model_execution": {
+    "mode": "live",
+    "run_id": "<current-take>",
+    "evidence": "evidence/model-execution.json",
+    "current_live_e2e": "not-run",
+    "source_live_e2e": null,
+    "disclosure": "Live model"
+  },
   "deviations": [],
   "artifacts": [],
   "known_weaknesses": [],

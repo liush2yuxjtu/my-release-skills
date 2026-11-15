@@ -77,6 +77,7 @@ FOLLOW instructions {repo_path}/prompts/prompt.md
 - `skills/select-release-features/` — 用户价值矩阵与故事候选
 - `skills/select-release/` — 人类功能范围选择
 - `skills/record-full-walkthrough/` — walkthrough、MP4、GIF 与 QA
+- `skills/record-production-feature/` — 单功能素材；采用[真实模型录制](skills/record-production-feature/playbooks/live-model-recording.md)或[真实响应 replay](skills/record-production-feature/playbooks/captured-model-replay.md)，每条 take 绑定来源，禁止 scripted/mock 模型演示
 - `skills/create-release-social-cards/` — 可评审的视觉候选
 - `skills/verify-chatcut-release-skill/` — `/verify` 项目级验证契约
 - `docs/anthropic-knowledge-work-visual.md` — Anthropic 知识工作模型与 Skill 映射

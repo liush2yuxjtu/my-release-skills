@@ -1,14 +1,21 @@
 interface:
   display_name: Production Feature Media
   short_description: Record one shipped feature as verified video and GIF
-  default_prompt: Use $record-production-feature to turn one verified production feature
-    into a full MP4 and an 8-second email GIF. Enforce hard rules: English UI for every
-    recording (set Language to English before record; abort if not English; scan GIF frames
-    for CJK UI); mandatory take verification before keep/discard (fixed-time frame strip
+  default_prompt: >-
+    Use $record-production-feature to turn one verified production feature
+    into a full MP4 and an 8-second email GIF. Enforce hard rules: verify the actual native
+    target UI language before recording and in delivered frames; use English by default
+    for unspecified ChatCut release media, and preserve requested native languages;
+    mandatory take verification before keep/discard (fixed-time frame strip
     vs storyboard plus timing cross-check; log verdict/reason to runs/takes.log); and
     mandatory test cutout before clip selection (≥3 start/mid/end stills with the same
     demo cutout tool or noted proxy; reject on holes/fragments/color blending; gate above
-    messiness score; record clip_test_cutout).
+    messiness score; record clip_test_cutout). For model-dependent features, use only
+    live API execution or strictly matched captured-model replay. Follow the live-model-recording
+    and captured-model-replay playbooks. Scripted/mock model responses and prefilled
+    Assistant/TODO/tool events are prohibited, including PR demos. Bind each media take
+    to its own model evidence; disclose replay visibly and in handoff, execute tools for
+    real, and keep current live E2E not-run for replay.
   icon_small: assets/icon.svg
   icon_large: assets/icon.svg
 policy:

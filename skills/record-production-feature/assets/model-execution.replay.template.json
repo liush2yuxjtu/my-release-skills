@@ -1,0 +1,29 @@
+{
+  "schema": "feature-model-execution/v1",
+  "mode": "captured-replay",
+  "run_id": "<current-replay-take>",
+  "phase": "record",
+  "product": {"commit": "<source-matching-sha>", "version": "<observed-version>", "surface": "browser"},
+  "model": {"provider": "<captured-provider>", "requested": "<captured-model>", "observed": null, "parameters": {}},
+  "fingerprints": {"method": "sha256", "request_context": "<sha256>", "tools": "<sha256>", "input": "<sha256>", "initial_state": "<sha256>", "normalization": []},
+  "limits": {"max_takes": 3, "max_live_requests": 0, "request_timeout_s": null, "take_timeout_s": null, "max_cost": null},
+  "requests": "evidence/replay-requests.jsonl",
+  "markers": "evidence/markers.jsonl",
+  "takes_ledger": "../takes.log",
+  "raw": {"path": "raw/full.mp4", "sha256": "<sha256>", "complete": false},
+  "outcome": {"status": "pending", "checks": [], "evidence": null},
+  "current_live_e2e": "not-run",
+  "source_live_e2e": {"status": "pending", "run_id": "<original-live-run>", "commit": "<original-source-sha>", "surface": "browser", "evidence": "source/live-e2e.json", "sha256": "<sha256>"},
+  "replay": {
+    "capture": {"path": "source/model-capture.jsonl", "sha256": "<sha256>"},
+    "source_trace": {"path": "source/model-requests.jsonl", "sha256": "<sha256>"},
+    "source_raw": {"path": "source/full.mp4", "sha256": "<sha256>"},
+    "match_report": "evidence/replay-match.json",
+    "tools": {"mode": "live", "evidence": "evidence/tool-execution.jsonl"},
+    "observed_model_provider_requests": null,
+    "network_evidence": "evidence/model-network.json",
+    "timing": "original",
+    "time_map": null
+  },
+  "disclosure": {"label": "Recorded model response · real tools", "visible_evidence": "verify/replay-label-strip.png", "handoff_text": "真实模型响应回放，工具真实执行；本次未做 live E2E。"}
+}

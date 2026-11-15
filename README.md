@@ -77,6 +77,7 @@ Anthropic describes Agent Skills as folders of instructions, scripts, and resour
 - `skills/select-release-features/` — user-value matrix and story candidates
 - `skills/select-release/` — the human feature-shortlist handoff
 - `skills/record-full-walkthrough/` — full walkthrough, raw MP4, derived GIF, QA
+- `skills/record-production-feature/` — one-feature media; [live model recording](skills/record-production-feature/playbooks/live-model-recording.md) and [captured response replay](skills/record-production-feature/playbooks/captured-model-replay.md), with per-take provenance and no scripted/mock model demonstrations
 - `skills/create-release-social-cards/` — reviewable visual candidates
 - `skills/verify-chatcut-release-skill/` — project-level verification
 - `docs/anthropic-knowledge-work-visual.md` — market model and Skill mapping

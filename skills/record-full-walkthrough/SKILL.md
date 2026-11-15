@@ -14,6 +14,7 @@ Status: IMPLEMENTED — entry_or_manual recording; explicit plan-only tasks only
 
 - 先找已有录制。按用户指定范围搜索可访问的 ChatGPT 会话、已保存素材及脚本；核对时间、版本、范围、画面和哈希。匹配时复用，不为预览或讲解脚本重录。会话搜索能力不可用时明确实际检索范围，不能声称查遍全部聊天。
 - 默认 `pure-screen`：不加讲解字幕、发布角标、标题卡、装饰性 callout、旁白、音乐或转场；保留原生应用界面、文字与普通鼠标。应用自己的字幕编辑/字幕轨属于演示内容，不能因“去掉字幕”而删掉它们。章节写入 metadata，不烧进画面。仅按用户明确要求开启讲解层。
+- 模型依赖功能遵守 [模型录制规则](../record-production-feature/SKILL.md#模型依赖录制只允许-live-与-captured-replay) 及其 live/replay playbook：禁止 scripted/mock 模型和预填 Assistant/TODO/工具事件；replay 仅来自可验证的真实 capture，工具实际执行，当前 live E2E 仍为 not-run。持续可读的 replay 来源标签是 pure-screen 的必要例外，原片与派生物都保留。
 - 需要去掉讲解层时，优先使用已有干净原片重新导出。若只有烧录字幕的成片，说明缺少干净源；用户明确要求不重录时交付现有来源和缺口。不要用裁掉原生 UI、模糊或生成式修补伪造纯屏幕。
 - 交付 GIF 时给可直接看的内嵌预览与下载链接。用户要讲解脚本时，用 ELI5 说明：Bash 启动脚本，Playwright/原生 API 完成固定步骤，FFmpeg 导出素材；区分实际保存的脚本与 agent 临时操作。可调整项用 Markdown 表格列出当前值、修改位置和所需复验。
 - 将实际录制脚本、分镜、复现命令和小型证据放在本技能的 `examples/{version_slug}/`，从 SKILL.md 链接。大媒体与 raw frames 留在已核实归档，不打包凭据、profile 或访问码。版本示例不作为下一次任务的默认项目、端口、坐标或剪辑秒数。
@@ -85,7 +86,7 @@ python3 skills/record-full-walkthrough/scripts/make_gif_excerpt.py \
 
 - 在 Mac mini 用 ffprobe 检查完整 MP4 与 excerpt；抽完整 contact sheet、所有主要交互的密集 frame strip、每个章节边界和 GIF 序列。
 - 返回并查看实际图片；检查空白帧、裁切、菜单、遮挡、术语、鼠标、状态变化及至少 3 秒结果。`metadata_pass` 不能代替视觉通过。
-- 对 `pure-screen` 检查真实像素没有讲解字幕、发布角标或其他额外文字层；无 subtitle stream 不代表没有烧录文字。保留原生字幕演示。另记录 presentation 与 `textOverlays: false`。
+- 对 `pure-screen` 检查真实像素没有讲解字幕、发布角标或其他额外文字层；无 subtitle stream 不代表没有烧录文字。保留原生字幕演示。replay 的必要来源标签须在相关 MP4/GIF 清楚可读，并在 presentation 单独记录，不能误填为没有任何文字层；live 无额外层时记录 `textOverlays: false`。
 - 将视觉结论另存 `qa.json`，包含检查人、时间、被检查文件 SHA256、图片路径和结果。编码脚本只返回 `visual_review: pending`。
 - 遇到连接器输出上限时，用有界图片和二进制分块返回；验证每块长度及整文件 SHA256。不要把截断图片当成应用空白或视觉通过。
 - 保存 full MP4、GIF、excerpt MP4、poster、chapters、manifest、QA、脚本与 evidence。用户指定 Drive 时核实目录 ID 和实际上传文件；未指定时使用当前持久保存能力。

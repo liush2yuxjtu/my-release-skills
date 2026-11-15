@@ -1,0 +1,19 @@
+{
+  "schema": "feature-model-execution/v1",
+  "mode": "live",
+  "run_id": "<current-take>",
+  "phase": "record",
+  "product": {"commit": "<actual-source-sha>", "version": "<observed-version>", "surface": "browser"},
+  "model": {"provider": "<actual-provider>", "requested": "<actual-model>", "observed": null, "parameters": {}},
+  "fingerprints": {"method": "sha256", "request_context": "<sha256>", "tools": "<sha256>", "input": "<sha256>", "initial_state": "<sha256>", "normalization": []},
+  "limits": {"max_takes": 3, "max_live_requests": null, "request_timeout_s": null, "take_timeout_s": null, "max_cost": null},
+  "requests": "evidence/model-requests.jsonl",
+  "markers": "evidence/markers.jsonl",
+  "takes_ledger": "../takes.log",
+  "raw": {"path": "raw/full.mp4", "sha256": "<sha256>", "complete": false},
+  "outcome": {"status": "pending", "checks": [], "evidence": null},
+  "current_live_e2e": "not-run",
+  "source_live_e2e": null,
+  "replay": null,
+  "disclosure": {"label": "Live model", "visible_evidence": null, "handoff_text": "<actual model and verified outcome>"}
+}
